@@ -1,0 +1,124 @@
+include(FetchContent)
+
+#glfw
+FetchContent_Declare(
+	glfw
+	GIT_REPOSITORY https://github.com/glfw/glfw.git
+	GIT_TAG 3.3.8)
+	
+FetchContent_Declare(
+	assimp
+	GIT_REPOSITORY https://github.com/assimp/assimp.git
+	GIT_TAG v5.2.5)
+
+FetchContent_Declare(
+	LibMaths
+	GIT_REPOSITORY https://github.com/Angel-2180/LibMaths.git
+	)
+	
+
+option(GLFW_BUILD_EXAMPLES OFF)
+option(GLFW_BUILD_TESTS OFF)
+option(GLFW_BUILD_DOCS OFF)
+	
+#glm
+
+#Vulkan
+
+find_package(Vulkan REQUIRED COMPONENTS glslc)
+
+file (GLOB_RECURSE TARGET_HEADER_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+	
+file (GLOB_RECURSE TARGET_SOURCE_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+
+	
+file (GLOB_RECURSE TARGET_SHADER_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/*.vert
+	${CMAKE_CURRENT_SOURCE_DIR}/*.frag
+	${CMAKE_CURRENT_SOURCE_DIR}/*.geom
+	${CMAKE_CURRENT_SOURCE_DIR}/*.tesc
+	${CMAKE_CURRENT_SOURCE_DIR}/*.tese
+	${CMAKE_CURRENT_SOURCE_DIR}/*.glsl)
+	
+file (GLOB_RECURSE TARGET_EXTRA_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/*.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/*.md)
+	
+set(TARGET_FILES ${TARGET_HEADER_FILES} ${TARGET_SOURCE_FILES} ${TARGET_SHADER_FILES} ${TARGET_EXTRA_FILES})
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_FILES})
+
+set(TARGET_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+FetchContent_MakeAvailable(glfw assimp LibMaths)
+
+get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
+add_executable(${TARGET_NAME})
+
+target_sources(${TARGET_NAME} PRIVATE ${TARGET_FILES})
+
+
+target_include_directories(${TARGET_NAME} PRIVATE ${TARGET_INCLUDE_DIR})
+target_include_directories(${TARGET_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
+target_include_directories(${TARGET_NAME} PRIVATE ${glfw_SOURCE_DIR}/include)
+target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/External)
+
+target_link_libraries(${TARGET_NAME} PRIVATE ${Vulkan_LIBRARIES})
+target_link_libraries(${TARGET_NAME} PRIVATE glfw)
+target_link_libraries(${TARGET_NAME} PRIVATE assimp)
+
+# Add Maths LIbrary
+set(MATHS_DIR LibMaths)
+file(GLOB_RECURSE MATH_SOURCES ${MATHS_DIR}/*.cpp ${MATHS_DIR}/*.h)
+target_include_directories(${TARGET_NAME} PUBLIC ${MATHS_DIR})
+
+add_custom_command(
+	TARGET ${TARGET_NAME} PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Assets
+		$<TARGET_FILE_DIR:${TARGET_NAME}>/Assets)
+		
+add_custom_command(
+	TARGET ${TARGET_NAME} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${CMAKE_CURRENT_SOURCE_DIR}/External/Assimp
+        $<TARGET_FILE_DIR:${TARGET_NAME}>)
+		
+if (MSVC)
+	set_target_properties(${TARGET_NAME} PROPERTIES
+		VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
+		
+	target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
+else()
+	target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+#Shader compilation
+set(SHADER_BINARIES_DIR ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
+foreach(SHADER_FILE IN LISTS TARGET_SHADER_FILES)
+
+	string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR} ${SHADER_BINARIES_DIR} SHADER_BINARY ${SHADER_FILE})
+	set(SHADER_BINARY ${SHADER_BINARY}.spv)
+	
+	get_filename_component(SHADER_BINARY_DIR ${SHADER_BINARY} DIRECTORY)
+	file(MAKE_DIRECTORY ${SHADER_BINARY_DIR})
+	
+	add_custom_command(
+		OUTPUT ${SHADER_BINARY}
+		COMMAND ${Vulkan_GLSLC_EXECUTABLE} "${SHADER_FILE}" -o "${SHADER_BINARY}"
+		DEPENDS ${SHADER_FILE}
+		VERBATIM)
+		
+	set(SHADER_BINARIES ${SHADER_BINARIES} ${SHADER_BINARY})
+endForeach()
+
+set(SHADER_TARGET_NAME ${TARGET_NAME}_shader)
+add_custom_target(${SHADER_TARGET_NAME} DEPENDS ${SHADER_BINARIES})
+
+add_dependencies(${TARGET_NAME} ${SHADER_TARGET_NAME})
+
+
+
