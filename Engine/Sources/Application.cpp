@@ -286,6 +286,13 @@ void Application::ProcessInput()
 
 	if (Inputs::GetKey(ESCAPE))
 		glfwSetWindowShouldClose(window.GetGLFWWindow(), true);
+
+	if (Inputs::GetKey(TAB))
+	{
+		Time::FPS::ToggleVSync();
+		RecreateSwapChain();
+		std::cout << Time::FPS::IsVSyncOn() << std::endl;
+	}
 }
 
 void Application::CreateDescriptorPoolTexture(Mesh* mesh)
@@ -1181,10 +1188,12 @@ VkSurfaceFormatKHR Application::ChooseSwapSurfaceFormat(const std::vector<VkSurf
 }
 
 VkPresentModeKHR Application::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-	for (const auto& availablePresentMode : availablePresentModes) {
-		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-			return availablePresentMode;
-		}
+
+	if (!Time::FPS::IsVSyncOn())
+	{
+		for (const auto& availablePresentMode : availablePresentModes)
+			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+				return VK_PRESENT_MODE_MAILBOX_KHR;
 	}
 
 	return VK_PRESENT_MODE_FIFO_KHR;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Application.h"
+#include "ImGUI/imgui.h"
 
 const std::string DEFAULT_TEXTURE_PATH = "Assets/textures/defaultTexture.jpg";
 

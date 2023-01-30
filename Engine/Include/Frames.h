@@ -22,11 +22,10 @@ public:
 		static inline bool vSync = true;
 
 		static void UpdateAverageFPS();
-		static void ToggleVSync();
 
 	public:
 		static void UpdateFPS();
-
+		static void ToggleVSync();
 		static void SetFPSUpdateDelay(const double& newDelay);
 		[[nodiscard]] static unsigned short GetFPS();
 		[[nodiscard]] static bool IsVSyncOn();

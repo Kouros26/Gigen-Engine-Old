@@ -200,7 +200,7 @@ private:
 
 	//main =================================================================================================
 
-	static void ProcessInput();
+	void ProcessInput();
 	void MainLoop();
 	void DrawFrame();
 
@@ -215,7 +215,7 @@ private:
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
 	//conditions for "swapping" images to the screen
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 
 	//resolution of images in swap chain
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
