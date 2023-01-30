@@ -1,5 +1,6 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
+#include <string>
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 
@@ -10,7 +11,7 @@ class Window
 	unsigned int width{};
 	unsigned int height{};
 
-	char* const APPLICATION_NAME = "Gigen Engine";
+	std::string appName = "Gigen Engine";
 
 	void ProcessInput() const; 
 	static void KeyCallback(GLFWwindow*, int key, int, int action, int);

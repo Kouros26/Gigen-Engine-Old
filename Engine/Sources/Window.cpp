@@ -26,7 +26,7 @@ Window::Window()
 	GLFWmonitor* MyMonitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode mode = *glfwGetVideoMode(MyMonitor);
 
-	window = glfwCreateWindow(mode.width, mode.height, APPLICATION_NAME, nullptr, nullptr);
+	window = glfwCreateWindow(mode.width, mode.height, appName.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
 	glfwMakeContextCurrent(window);

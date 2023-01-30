@@ -10,29 +10,24 @@ FetchContent_Declare(
 	assimp
 	GIT_REPOSITORY https://github.com/assimp/assimp.git
 	GIT_TAG v5.2.5)
-
-FetchContent_Declare(
-	LibMaths
-	GIT_REPOSITORY https://github.com/Angel-2180/LibMaths.git
-	)
 	
-
 option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
 option(GLFW_BUILD_DOCS OFF)
-	
-#glm
 
 #Vulkan
-
 find_package(Vulkan REQUIRED COMPONENTS glslc)
 
+#Build engine
+set(HEADER_DIR "Include")
+set(SOURCE_DIR "Sources")
+
 file (GLOB_RECURSE TARGET_HEADER_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+	"${HEADER_DIR}/*.h")
 	
 file (GLOB_RECURSE TARGET_SOURCE_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.c
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+	"${SOURCE_DIR}/*.c"
+	"${SOURCE_DIR}/*.cpp")
 
 	
 file (GLOB_RECURSE TARGET_SHADER_FILES
@@ -51,9 +46,9 @@ set(TARGET_FILES ${TARGET_HEADER_FILES} ${TARGET_SOURCE_FILES} ${TARGET_SHADER_F
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_FILES})
 
-set(TARGET_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(TARGET_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Include)
 
-FetchContent_MakeAvailable(glfw assimp LibMaths)
+FetchContent_MakeAvailable(glfw assimp)
 
 get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
@@ -61,20 +56,26 @@ add_executable(${TARGET_NAME})
 
 target_sources(${TARGET_NAME} PRIVATE ${TARGET_FILES})
 
-
 target_include_directories(${TARGET_NAME} PRIVATE ${TARGET_INCLUDE_DIR})
 target_include_directories(${TARGET_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${TARGET_NAME} PRIVATE ${glfw_SOURCE_DIR}/include)
-target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/External)
 
 target_link_libraries(${TARGET_NAME} PRIVATE ${Vulkan_LIBRARIES})
 target_link_libraries(${TARGET_NAME} PRIVATE glfw)
 target_link_libraries(${TARGET_NAME} PRIVATE assimp)
 
-# Add Maths LIbrary
-set(MATHS_DIR LibMaths)
-file(GLOB_RECURSE MATH_SOURCES ${MATHS_DIR}/*.cpp ${MATHS_DIR}/*.h)
+#Add Maths Library
+set(MATHS_DIR "LibMaths")
+file(GLOB_RECURSE MATH_SOURCES "${MATHS_DIR}/*.cpp" "${MATHS_DIR}/*.h")
+add_library(libMaths STATIC EXCLUDE_FROM_ALL "${MATH_SOURCES}")
+target_include_directories(libMaths PRIVATE ${MATHS_DIR})
 target_include_directories(${TARGET_NAME} PUBLIC ${MATHS_DIR})
+target_link_libraries(${TARGET_NAME} PUBLIC ${MATHS_LIB})
+
+#Add Externals
+set(EXTERNAL_DIR "External")
+file(GLOB_RECURSE EXTERNAL_SOURCES "${EXTERNAL_DIR}/*.cpp" "${EXTERNAL_DIR}/*.h" "${EXTERNAL_DIR}/*.c")
+target_include_directories(${TARGET_NAME} PUBLIC ${EXTERNAL_DIR})
 
 add_custom_command(
 	TARGET ${TARGET_NAME} PRE_BUILD
@@ -90,6 +91,8 @@ add_custom_command(
 if (MSVC)
 	set_target_properties(${TARGET_NAME} PROPERTIES
 		VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/$(Configuration))
+	
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})
 		
 	target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
 else()
@@ -119,6 +122,3 @@ set(SHADER_TARGET_NAME ${TARGET_NAME}_shader)
 add_custom_target(${SHADER_TARGET_NAME} DEPENDS ${SHADER_BINARIES})
 
 add_dependencies(${TARGET_NAME} ${SHADER_TARGET_NAME})
-
-
-

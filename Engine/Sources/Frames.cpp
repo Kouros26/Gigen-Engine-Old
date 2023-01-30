@@ -1,10 +1,17 @@
-#include "Watch.h"
+#include "Frames.h"
 #include <GLFW/glfw3.h>
 #include <iostream> //TEMP
+
+class Application;
 
 unsigned short Time::FPS::GetFPS()
 {
 	return fps;
+}
+
+bool Time::FPS::IsVSyncOn()
+{
+	return vSync;
 }
 
 void Time::FPS::UpdateFPS()
@@ -39,6 +46,11 @@ void Time::FPS::UpdateAverageFPS()
 	std::cout << "Average FPS from last 10 seconds : " << averageFps << std::endl;
 
 	averageFps = 0;
+}
+
+void Time::FPS::ToggleVSync()
+{
+	vSync = !vSync;
 }
 
 void Time::FPS::SetFPSUpdateDelay(const double& newDelay)

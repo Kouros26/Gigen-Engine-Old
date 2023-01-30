@@ -3,24 +3,6 @@
 
 class Time
 {
-	class FPS
-	{
-	
-		static inline FixedQueue<unsigned short, 10> fpsQueue;
-
-		static inline unsigned short fps = 0;
-		static inline unsigned int averageFps = 0;
-		static inline double FPSUpdateDelay = 1;
-		static inline double lastFPSUpdate = 0;
-
-	public:
-		static void UpdateFPS();
-		static void UpdateAverageFPS();
-
-		static void SetFPSUpdateDelay(const double& newDelay);
-		[[nodiscard]] static unsigned short GetFPS();
-	};
-
 	static inline double deltaTime = 0;
 	static inline double timeScale = 1;
 	static inline double unscaledDeltaTime;
@@ -28,6 +10,27 @@ class Time
 	static inline double lastTime = 0;
 
 public:
+
+	class FPS
+	{
+		static inline FixedQueue<unsigned short, 10> fpsQueue;
+
+		static inline unsigned short fps = 0;
+		static inline unsigned int averageFps = 0;
+		static inline double FPSUpdateDelay = 1;
+		static inline double lastFPSUpdate = 0;
+		static inline bool vSync = true;
+
+		static void UpdateAverageFPS();
+		static void ToggleVSync();
+
+	public:
+		static void UpdateFPS();
+
+		static void SetFPSUpdateDelay(const double& newDelay);
+		[[nodiscard]] static unsigned short GetFPS();
+		[[nodiscard]] static bool IsVSyncOn();
+	};
 
 	static void UpdateDeltaTime();
 
