@@ -1,5 +1,20 @@
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 20)
-project(Vulkan LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 
-add_subdirectory("Engine")
+set(CMAKE_CXX_STANDARD 20)
+set(MAIN_PROJECT_NAME Main)
+set(SOURCE_FOLDER Sources)
+set(INCLUDE_FOLDER include)
+set(DEPENDS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies)
+set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Resources)
+
+
+set(PROJECT_NAME GigEngine)
+  
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${MAIN_PROJECT_NAME})
+
+
+
+project(${PROJECT_NAME} LANGUAGES CXX)
+
+add_compile_options(/Zc:__cplusplus)
+add_subdirectory(${PROJECT_NAME})

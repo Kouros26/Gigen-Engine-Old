@@ -1,10 +1,11 @@
 # Build -----------------------------------------------------------------------
 
 ### Output and Cache Directories ###
-
+/External/
 /Docs/
 
-/build/
+/[Bb]uild/
+/[Bb]uilds/
 /bin/
 /out/
 /cmake-build-*/
@@ -27,6 +28,7 @@
 !/Release/*
 
 .vs
+.vscode
 
 ### CMake ###
 CMakeCache.txt
@@ -54,8 +56,7 @@ install_manifest.txt
 *.vcxproj.FileListAbsolute.txt
 
 # Comment this line if you want to version Wavefront .obj files.
-#*.obj
-#*.iobj
+*.iobj
 
 # Compiled Dynamic libraries
 *.so
@@ -72,13 +73,11 @@ install_manifest.txt
 *.lib
 
 # Don't ignore the libs vendored in the application !
-!external/**/*.lib
-!external/**/*.dll
-!external/**/*.so
-!external/**/*.pdb
+!Dependencies/**/*.lib
+!Dependencies/**/*.dll
+!Dependencies/**/*.so
 
 # Executables
 *.exe
 *.out
 *.app
-LogFile.txt

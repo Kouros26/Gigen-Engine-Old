@@ -1,0 +1,109 @@
+variable
+	globale	=> g_varName
+	membre	=> varName
+	membre statique	=> varName
+	locale	=> varName
+	constante (ex: pi(3.1416...), magic number)	=> avoid magic number, make it a var instead => kPascalCase 
+	statique	=> varName
+	pointeur	=> use nullptr instead of NULL or 0
+	reference	=> prefer reference to pointeur especially make it const to avoid unwanted modification
+	single letter (ex: int i;)	=> authorized but prefer meaningful wording
+	parameters => pPascalCase
+
+fonction
+	globale	=> PascalCase
+	membre	=> PascalCase
+	membre statique	=> PascalCase
+	statique	=> PascalCase
+	surcharge d'operateur membre	
+	surcharge d'operateur non-membre	
+	variadique	=> use sparingly and if used => Args... args
+	one-liner (.h, .cpp?)	=> make all function(except static & template) even one-liner in cpp 
+	lambda	=> authorized
+	constexpr	=> authorized
+	inline	=> authorized
+
+Classe
+	normal	=> PascalCase
+	imbriquee	=> PascalCase
+	heritage	
+	interface	=> IPascalCase
+	template	=> TPascalCase
+	rule of 3?	yes
+	rule of 5?	yes
+	getter/setter	PascalCase
+
+Commentaire
+	// vs /**/	=> if one line // else /**/
+	entete de fichier	=> used if files need explanation
+	documentation	=> next to complicated function (like maths function or similar that need more in depth comprhension)
+	utilisation de banderole	=> will not be necessary	
+
+Struct
+	PascalCase => typedef: t_PascalCase (optional)
+Enum
+	PascalCase => typedef: e_PascalCase (optional)
+Namespace
+	PascalCase => if Global input in Namespace 
+
+preprocesseur
+	alias	=>   VAR_NAME 
+	macro	=>   VAR_NAME 
+	variadique	=> use sparingly
+	pragma
+		once	=> at start of every header files
+		comment	
+		warning
+
+C++
+	compatibilite 98 / 03 / 11 / 14 / 17 / 20	=> usage of C++ 20
+	compatibilite cross-platforme	=> focus on windows
+	librarie dynamique (dll) vs librarie statique	=> usages of both libraries
+	std		=> use sparingly but authorized
+	RAII	=> try to use it as much as possible
+	CRTP	=> no
+	SFINAE	=> no	
+	utilisation d'attibute	=> authorized
+		[[nodiscard]]
+		[[fallthrough]]
+		[[deprecated]]
+		[[noreturn]]
+		[[maybe_unused]]
+
+CMAKE
+	niveau de warning	=> /W4 /WX
+	inclusion de librarie	=> authorized
+
+code
+	indentation (tab, 4 space, ...)	=> length of a visual studio tab
+	alignement des declaration	=> no
+	longueur des ligne	=> 120 character
+	longueur des fonction	=> 35 ligne
+	nombre de parametre par fonction	=> 5 max
+	accolade (moustache -> {} )	1 line = 1 { 
+		ex: if(...)
+		{
+		}
+	if one-liner?	=> yes
+	for one-liner?	=>	yes
+	while one-liner?	=> yes
+	switch	
+		default:	=> yes
+		fallthrough	=> no
+		if / else if	=> yes
+	declaration multiple par ligne (ex: int a = 0, b = 1;)	=> yes
+	instruction multiple par ligne (ex: a++; b++;)	=> yes, but use sparingly ,favor for short declaration
+	instruction sur plusieurs lignes	
+	utilisation de bitfield et de bitwise operation (au lieu de boolean)	=>	favor bool but authorized
+	memory leak	=> to avoid at all cost
+	exception vs error code	=>
+	typedef des type de base	=> typedef of struct, and Enum
+	ANSI vs UNICODE (char vs wchar_t)	=> usage of ANSI
+	funky stuff (ex: if (!(component = getComponent(++i))->isActive()) continue;)
+
+Pattern
+	singleton		
+	object pool
+	prototype
+	iterator
+	
