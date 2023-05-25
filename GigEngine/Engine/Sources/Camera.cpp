@@ -19,19 +19,24 @@ lm::FMat4 Camera::CreateViewMatrix()
 	return lm::FMat4::LookAt(GetTransform().GetWorldPosition(), GetTransform().GetWorldPosition() + GetFront(), GetUp());
 }
 
-float Camera::GetFov()
+float Camera::GetFov() const
 {
 	return currentFov;
 }
 
-float Camera::GetNear()
+float Camera::GetNear() const
 {
 	return currentNear;
 }
 
-float Camera::GetFar()
+float Camera::GetFar() const
 {
 	return currentFar;
+}
+
+float Camera::GetRatio() const
+{
+	return currentRatio;
 }
 
 void Camera::SetFov(float fov)
@@ -99,4 +104,10 @@ lm::FVec3 Camera::GetRight()
 	lm::FMat4 inverse = lm::FMat4::Inverse(GetTransform().GetMatrix());
 	const lm::FVec3 right = inverse[0];
 	return lm::FVec3::Normalize(right);
+}
+
+std::string Camera::GetType()
+{
+	const std::string type(typeid(this).name());
+	return type.substr(6, type.size() - 16);
 }

@@ -3,7 +3,7 @@
 
 CapsuleRigidBody::CapsuleRigidBody(float pRadius, float pHeight, const lm::FVec3& pScale, const lm::FVec3& pPos, float pMass,
 	GameObject* pOwner)
-		: RigidBody(pOwner), radius(pRadius), height(pHeight)
+	: RigidBody(pOwner), radius(pRadius), height(pHeight)
 {
 	scale = pScale;
 	mass = pMass;
@@ -26,7 +26,6 @@ CapsuleRigidBody::CapsuleRigidBody(float pRadius, float pHeight, const lm::FVec3
 	std::function<void(Collision collision)> enter =
 		[pOwner](const Collision& collision)
 	{
-
 		pOwner->OnCollisionEnter(collision);
 	};
 
@@ -41,7 +40,7 @@ CapsuleRigidBody::CapsuleRigidBody(float pRadius, float pHeight, const lm::FVec3
 	collisionCallBacks->onExit = CollisionExitCallBack(exit);
 	body->setUserPointer(owner);
 
-	WorldPhysics::AddRigidBodyInWorld(body);
+	WorldPhysics::GetInstance().AddRigidBodyInWorld(*body);
 }
 
 CapsuleRigidBody::~CapsuleRigidBody()
@@ -59,4 +58,22 @@ float CapsuleRigidBody::GetRadius() const
 float CapsuleRigidBody::GetHeight() const
 {
 	return height;
+}
+
+void CapsuleRigidBody::SetRadius(float pRadius)
+{
+	btCapsuleShape* shape = (btCapsuleShape*)rbShape;
+	btVector3 localScale(shape->getLocalScaling());
+	localScale.setX(pRadius);
+	shape->setLocalScaling(localScale);
+	radius = pRadius;
+}
+
+void CapsuleRigidBody::SetHeight(float pHeight)
+{
+	btCapsuleShape* shape = (btCapsuleShape*)rbShape;
+	btVector3 localScale(shape->getLocalScaling());
+	localScale.setY(pHeight);
+	shape->setLocalScaling(localScale);
+	height = pHeight;
 }

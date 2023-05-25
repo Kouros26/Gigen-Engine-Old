@@ -15,4 +15,7 @@ public:
 
 	[[nodiscard]] float GetRadius() const;
 	[[nodiscard]] float GetHeight() const;
+
+	void SetRadius(float pRadius);
+	void SetHeight(float pHeight);
 };

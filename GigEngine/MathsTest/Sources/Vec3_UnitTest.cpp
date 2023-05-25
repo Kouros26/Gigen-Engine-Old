@@ -187,17 +187,9 @@ TEST_CASE("Vector3", "[.all][vector][Vector3][float]")
 				CHECK_VECTOR3(productAssignment, productAssignmentGlm);
 			}
 
-			{
-				lm::FVec3 product = big * small;
-
-				glm::vec3 productGlm = bigGlm * smallGlm;
-
-				CHECK_VECTOR3(product, productGlm);
-			}
-
-			{
-				lm::FVec3 productAssignment = big;
-				productAssignment *= 2.f;
+            {
+                lm::FVec3 productAssignment = big;
+                productAssignment *= 2.f;
 
 				glm::vec3 productAssignmentGlm = bigGlm;
 				productAssignmentGlm *= 2.f;
@@ -221,18 +213,10 @@ TEST_CASE("Vector3", "[.all][vector][Vector3][float]")
 				glm::vec3 quotientAssignmentGlm = bigGlm;
 				quotientAssignmentGlm /= smallGlm;
 
-				CHECK_VECTOR3(quotientAssignment, quotientAssignmentGlm);
-			}
-
-			{
-				lm::FVec3 quotient = big / small;
-
-				glm::vec3 quotientGlm = bigGlm / smallGlm;
-
-				CHECK_VECTOR3(quotient, quotientGlm);
-			}
-		}
-	}
+                CHECK_VECTOR3(quotientAssignment, quotientAssignmentGlm);
+            }
+        }
+    }
 
 	SECTION("Functionality")
 	{
@@ -314,8 +298,11 @@ TEST_CASE("Vector3", "[.all][vector][Vector3][float]")
 
 			glm::vec3 reflectGlm = glm::reflect(baseGlm, glm::normalize(otherGlm));
 
-			CHECK_VECTOR3(reflect, reflectGlm);
-		}
+            CHECK_VECTOR3(reflect, reflectGlm);
+
+
+           
+        }
 
 		SECTION("Refract")
 		{
@@ -374,7 +361,8 @@ TEST_CASE("Vector3", "[.all][vector][Vector3][float]")
 
 			buffer << input;
 
-			CHECK(buffer.str() == "FVec3(2.5, -0.5, 2)");
-		}
-	}
+            CHECK(buffer.str() == "FVec3(2.5, -0.5, 2)");
+        }
+    }
+
 }

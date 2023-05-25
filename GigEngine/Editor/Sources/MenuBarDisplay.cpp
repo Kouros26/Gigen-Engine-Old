@@ -3,10 +3,12 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "Application.h"
+#include "SceneSaver.h"
+#include "Interface.h"
 
 MenuBarDisplay::MenuBarDisplay()
 {
-	InterfaceManager::AddEditorElement(this);
+    InterfaceManager::AddEditorElement(this);
 }
 
 MenuBarDisplay::~MenuBarDisplay()
@@ -14,84 +16,163 @@ MenuBarDisplay::~MenuBarDisplay()
 
 void MenuBarDisplay::Draw()
 {
-	ImGui::BeginMainMenuBar();
+    ImGui::BeginMainMenuBar();
 
-	if (ImGui::BeginMenu("File"))
-	{
-		if (ImGui::MenuItem("test", "shortcut", false, true)) {}
-		if (ImGui::MenuItem("test2", "truc", false, false)) {}
+    if (ImGui::BeginMenu("File"))
+    {
+        if (ImGui::MenuItem("New Scene", "", false, true))
+        {
+            static char name[64];
+            ImGui::InputText("Scene Name", name, sizeof(name));
+            if (ImGui::Button("Create"))
+            {
+                Scene::GetInstance().SaveScene(std::string(name) + ".chad");
+            }
+        }
+        if (ImGui::MenuItem("Save", "", false, true)) {}
 
-		ImGui::EndMenu();
-	}
-	if (ImGui::BeginMenu("Edit"))
-	{
-		if (ImGui::MenuItem("test", "CTRL+Z")) {}
-		if (ImGui::MenuItem("test2", "CTRL+X")) {}
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Edit"))
+    {
+        if (ImGui::MenuItem("test", "CTRL+Z")) {}
+        if (ImGui::MenuItem("test2", "CTRL+X")) {}
 
-		ImGui::EndMenu();
-	}
+        ImGui::EndMenu();
+    }
+    if (ImGui::Button(ICON_SAVE))
+    {
+        Scene::GetInstance().SaveScene(Scene::GetInstance().GetCurrentSceneName());
+    }
+    if (ImGui::BeginMenu("Themes"))
+    {
+        if (ImGui::MenuItem("Dark", "", false, true))
+        {
+            Interface::SetTheme(Theme::Dark);
+        }
+        if (ImGui::MenuItem("Light", "", false, true))
+        {
+            Interface::SetTheme(Theme::Light);
+        }
+        if (ImGui::MenuItem("Black", "", false, true))
+        {
+            Interface::SetTheme(Theme::Black);
+        }
+        if (ImGui::MenuItem("Classic", "", false, true))
+        {
+            Interface::SetTheme(Theme::Classic);
+        }
+        if (ImGui::MenuItem("Dracula", "", false, true))
+        {
+            Interface::SetTheme(Theme::Dracula);
+        }
+        if (ImGui::MenuItem("Cherry", "", false, true))
+        {
+            Interface::SetTheme(Theme::Cherry);
+        }
+        if (ImGui::MenuItem("Grey", "", false, true))
+        {
+            Interface::SetTheme(Theme::Grey);
+        }
+        if (ImGui::MenuItem("Blue", "", false, true))
+        {
+            Interface::SetTheme(Theme::Blue);
+        }
+        if (ImGui::MenuItem("ClassicDark", "", false, true))
+        {
+            Interface::SetTheme(Theme::ClassicDark);
+        }
+        if (ImGui::MenuItem("ClassicLight", "", false, true))
+        {
+            Interface::SetTheme(Theme::ClassicLight);
+        }
+        if (ImGui::MenuItem("Cinder", "", false, true))
+        {
+            Interface::SetTheme(Theme::Cinder);
+        }
 
-	DrawPlayPause();
+        ImGui::EndMenu();
+    }
 
-	ImGui::SameLine(ImGui::GetWindowContentRegionWidth() - 40);
-	if (ImGui::Button("Close"))
-	{
-		Application::GetWindow().Close();
-	}
+    DrawPlayPause();
 
-	ImGui::EndMainMenuBar();
+    ImGui::EndMainMenuBar();
 }
 
-void MenuBarDisplay::DrawPlayPause()
+void MenuBarDisplay::DrawPlayPause() const
 {
-	ImGui::SameLine(ImGui::GetWindowContentRegionWidth() / 2 - 40);
+	ImGui::SameLine(ImGui::GetWindowContentRegionWidth() / 2 - 100);
 
-	bool isPause = Application::IsInPause();
-	bool isPlaying = !Application::IsInEditor();
-	bool isUsingEditorCam = Application::IsUsingEditorCam();
+	const bool isPause = Application::IsInPause();
+	const bool isShowUI = Application::IsShowUI();
+	const bool isPlaying = !Application::IsInEditor();
+	const bool isUsingEditorCam = Application::IsUsingEditorCam();
 
-	if (isPlaying)
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-	}
+    if (isPlaying)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, { 0,1,0,0.5f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0,1,0,0.6f });
+    }
 
-	if (ImGui::Button("Play"))
-	{
-		Application::Play();
-	}
+    if (ImGui::Button(ICON_PLAY, { 50, 0 }))
+    {
+        Application::Play();
+    }
 
-	if (isPlaying)
-	{
-		ImGui::PopStyleVar();
-	}
+    if (isPlaying)
+    {
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+    }
 
-	if (isPause)
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-	}
+    if (isPause)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, { 0,1,0,0.5f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0,1,0,0.6f });
+    }
 
-	if (ImGui::Button("Pause"))
-	{
-		Application::Pause();
-	}
+    if (ImGui::Button(ICON_PAUSE, { 50, 0 }))
+    {
+        Application::Pause();
+    }
 
-	if (isPause)
-	{
-		ImGui::PopStyleVar();
-	}
+    if (isPause)
+    {
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+    }
+
+    if (isUsingEditorCam)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, { 0,1,0,0.5f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0,1,0,0.6f });
+    }
+
+    if (ImGui::Button(ICON_CAMERA, { 50, 0 }))
+    {
+        Application::UseEditorCam();
+    }
 
 	if (isUsingEditorCam)
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
 	}
 
-	if (ImGui::Button("Editor camera"))
+	if (isShowUI)
 	{
-		Application::UseEditorCam();
+		ImGui::PushStyleColor(ImGuiCol_Button, { 0,1,0,0.5f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0,1,0,0.6f });
 	}
 
-	if (isUsingEditorCam)
+	if (ImGui::Button(ICON_TEXTURE " UI", { 50, 0 }))
 	{
-		ImGui::PopStyleVar();
+		Application::ShowUI();
+	}
+
+	if (isShowUI)
+	{
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
 	}
 }

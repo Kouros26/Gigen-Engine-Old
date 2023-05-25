@@ -2,9 +2,7 @@
 #include <vector>
 #include <string>
 #include "Vec3/FVec3.hpp"
-#include "btBulletDynamicsCommon.h"
-#include "DebugDrawer.h"
-#include <set>
+#include "Skybox.h"
 
 class GameObject;
 class Camera;
@@ -33,25 +31,29 @@ public:
 	static GameObject* CreateGameObject(GameObject*&& other) noexcept = delete;
 
 	//rule of 5
-	GameObject& operator=(const GameObject& other);
+	GameObject& operator=(const GameObject& other) const;
 	GameObject& operator=(GameObject&& other) noexcept;
 
 	static GameObject* CreateSpotLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
 		float constant = 0.5f, float linear = 0.5f, float quadratic = 0.5f,
 		float cutOff = 45, float outerCutOff = 90,
-		lm::FVec3 color = lm::FVec3(1));
+		const lm::FVec3& color = lm::FVec3(1));
 
 	static GameObject* CreatePointLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
 		float constant = 0.5f, float linear = 0.5f, float quadratic = 0.5f,
-		lm::FVec3 color = lm::FVec3(1));
+		const lm::FVec3& color = lm::FVec3(1));
 
 	static GameObject* CreateDirLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
-		lm::FVec3 color = lm::FVec3(1));
+		const lm::FVec3& color = lm::FVec3(1));
 
 	static GameObject* CreateCamera();
 
 	static Camera* GetCurrentCamera();
 	static void SetCurrentCamera(Camera* camera);
+
+	static void CreateSkyBox();
+	static Skybox* GetSkyBox();
+
 	//ok
 	static void SendLightsToShader();
 	static int GetDirLightSize();
@@ -59,15 +61,16 @@ public:
 	static int GetSpotLightSize();
 	static void SetFocusedGameObject(GameObject* obj);
 	static GameObject* GetFocusedGameObject();
-	static void Remove(GameObject* object);
+	static void RemoveGameObject(GameObject* object);
 
-	static std::vector<GameObject*> FindObjectsByName(std::string name);
-	static GameObject* FindObjectByName(std::string name);
-	static GameObject* FindObjectById(int id);
+	static std::vector<GameObject*> FindObjectsByName(const std::string& name);
+	static GameObject* FindObjectByName(const std::string& name);
+	static GameObject* FindObjectById(unsigned int id);
 
 private:
 	static GameObject* AddGameObject(GameObject* object);
 
+	inline static Skybox* skybox = nullptr;
 	inline static Camera* currentCamera;
 	inline static std::vector<GameObject*> gameObjects;
 

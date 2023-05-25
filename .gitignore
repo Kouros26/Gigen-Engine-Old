@@ -81,3 +81,5 @@ install_manifest.txt
 *.exe
 *.out
 *.app
+/Resources/Engine/appicon.aps
+/Resources/Scenes/default.chad

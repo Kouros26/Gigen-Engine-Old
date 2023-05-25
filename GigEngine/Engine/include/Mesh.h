@@ -1,6 +1,8 @@
 #pragma once
 #include "IResource.h"
 
+#define MAX_BONE_INFLUENCE 4
+
 class Mesh
 {
 public:

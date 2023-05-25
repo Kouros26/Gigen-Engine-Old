@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "Inputs.h"
 #include "Watch.h"
+#include "GameObjectManager.h"
 
 #include "Transform.h"
 #include "Vec3/FVec3.hpp"
@@ -11,7 +12,7 @@
 
 EditorCamera::EditorCamera()
 {
-	GetTransform().SetWorldPosition({ 0,10,0 });
+	GetTransform().SetWorldPosition({ 0, 10, 0 });
 }
 
 EditorCamera::~EditorCamera()
@@ -21,7 +22,13 @@ void EditorCamera::Update()
 {
 	ChangeSpeed();
 	Move();
-	Look();
+
+	if (GigInput::Inputs::GetMouse().isOnViewPort)
+	{
+		Translate();
+		Zoom();
+		Look();
+	}
 }
 
 void EditorCamera::ChangeSpeed()
@@ -51,17 +58,6 @@ void EditorCamera::ChangeSpeed()
 
 	if (!GigInput::Inputs::GetKey(GigInput::Keys::RIGHT_SHIFT))
 		pressRightShift = false;
-
-	HitResult result;
-	std::vector<GameObject*> ignored;
-	ignored.push_back(this);
-	if (GigInput::Inputs::GetKey(GigInput::Keys::TAB))
-	{
-		if (WorldPhysics::RayCast(GetTransform().GetWorldPosition(), GetFront() * 100, result, RayCastDebug::Timer, 5, ignored))
-		{
-			std::cout << "Raycast hit " << result.hitObject->GetName() << std::endl;
-		}
-	}
 }
 
 void EditorCamera::Move()
@@ -85,13 +81,20 @@ void EditorCamera::Move()
 
 	if (GigInput::Inputs::GetKey(GigInput::Keys::Q) || GigInput::Inputs::GetKey(GigInput::Keys::LEFT_CONTROL))
 		GetTransform().AddPosition(GetUp() * -scaleSpeed);
+}
 
+void EditorCamera::Translate()
+{
 	if (GigInput::Inputs::GetMouse().wheelClick)
 	{
-		GetTransform().AddPosition(GetRight() * GigInput::Inputs::GetMouse().mouseOffsetX);
-		GetTransform().AddPosition(GetUp() * -GigInput::Inputs::GetMouse().mouseOffsetY);
+		Application::GetWindow().SetMouseIcon(CursorShape::GRAB);
+		GetTransform().AddPosition(GetRight() * GigInput::Inputs::GetMouse().mouseOffsetX * static_cast<float>(Time::GetDeltaTime()));
+		GetTransform().AddPosition(GetUp() * -GigInput::Inputs::GetMouse().mouseOffsetY * static_cast<float>(Time::GetDeltaTime()));
 	}
+}
 
+void EditorCamera::Zoom()
+{
 	if (GigInput::Inputs::GetMouse().wheelOffsetY != 0)
 	{
 		GetTransform().AddPosition(GetFront() * GigInput::Inputs::GetMouse().wheelOffsetY);
@@ -101,9 +104,9 @@ void EditorCamera::Move()
 
 void EditorCamera::Look()
 {
-	if (GigInput::Inputs::GetMouse().rightClick == 1)
+	if (GigInput::Inputs::GetMouse().rightClick)
 	{
-		Application::GetWindow().setCursorShow(false);
+		Application::GetWindow().SetMouseIcon(CursorShape::EYE);
 		const float Ry = static_cast<float>(GigInput::Inputs::GetMouse().mouseOffsetX * static_cast<double>(sensitivity));
 		const float Rx = static_cast<float>(GigInput::Inputs::GetMouse().mouseOffsetY * static_cast<double>(sensitivity));
 
@@ -113,6 +116,13 @@ void EditorCamera::Look()
 		GetTransform().AddRotation(vecRot);
 	}
 
-	else if (GigInput::Inputs::GetMouse().rightClick == 0)
-		Application::GetWindow().setCursorShow(true);
+	if (GigInput::Inputs::GetMouse().OnLeftClick())
+	{
+		HitResult result;
+
+		if (WorldPhysics::GetInstance().SimpleRayCast(GetTransform().GetWorldPosition(), GetFront() * 1000, result, RayCastDebug::None, 5, lm::FVec3(1)))
+		{
+			GameObjectManager::SetFocusedGameObject(result.hitObject);
+		}
+	}
 }

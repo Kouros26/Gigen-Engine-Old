@@ -1,7 +1,11 @@
 #include <GLAD/glad.h>
 #include "Renderer.h"
+#include "Font.h"
+#include "UIImage.h"
 #include "GLFW/glfw3.h"
 #include <iostream>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 using namespace GigRenderer;
 
@@ -18,6 +22,10 @@ void Renderer::Init()
         std::cout << "Failed to initialize GLAD" << std::endl;
         glfwTerminate();
     }
+
+    //use to display png
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void Renderer::DeleteVertexArray(int n, const unsigned int* array)
@@ -33,6 +41,11 @@ void Renderer::DeleteBuffer(int n, const unsigned int* pBuffer)
 void Renderer::BindVertexArray(const unsigned int pArray)
 {
     glBindVertexArray(pArray);
+}
+
+void Renderer::BufferSubData(BufferType pType, int n, int size, float f[][4])
+{
+    glBufferSubData(GL_ARRAY_BUFFER, n, size, f);
 }
 
 void Renderer::BindBuffer(unsigned int pTarget, unsigned int pBuffer)
@@ -245,6 +258,24 @@ void Renderer::LoadTexture(unsigned int& pTexture, int pWidth, int pHeight, cons
     BindTexture(GL_TEXTURE_2D, RD_FALSE);
 }
 
+void Renderer::LoadImguiTexture(unsigned int& pTexture, int pWidth, int pHeight, const void* pData)
+{
+    glGenTextures(1, &pTexture);
+    BindTexture(GL_TEXTURE_2D, pTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+
+    // Upload pixels into texture
+#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+#endif
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pWidth, pHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pData);
+
+    BindTexture(GL_TEXTURE_2D, RD_FALSE);
+}
+
 void Renderer::BindTexture(unsigned int pTarget, unsigned int pTexture)
 {
     glBindTexture(pTarget, pTexture);
@@ -260,7 +291,7 @@ void Renderer::DepthFunction(unsigned int pFunc)
     glDepthFunc(pFunc);
 }
 
-void Renderer::SetupBuffer(Buffer& pVBO, Buffer& pEBO, BufferVAO& pVAO)
+void Renderer::SetupBuffer(const Buffer& pVBO, const Buffer& pEBO, const BufferVAO& pVAO)
 {
     if (pVAO.id == 0)
     {
@@ -285,13 +316,19 @@ void Renderer::SetupBuffer(Buffer& pVBO, Buffer& pEBO, BufferVAO& pVAO)
     BufferData(BufferType::ELEMENT, pEBO.size * sizeof(unsigned int), pEBO.data, RD_STATIC_DRAW);
 
     EnableVertexAttribArray(0);       // position
-    VertexAttribPointer(0, 3, RD_FLOAT, RD_FALSE, 8 * sizeof(float), (void*)0);
+    VertexAttribPointer(0, 3, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)0);
 
     EnableVertexAttribArray(1);       // normal
-    VertexAttribPointer(1, 3, RD_FLOAT, RD_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    VertexAttribPointer(1, 3, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(3 * sizeof(float)));
 
     EnableVertexAttribArray(2);       // texture
-    VertexAttribPointer(2, 2, RD_FLOAT, RD_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    VertexAttribPointer(2, 2, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(6 * sizeof(float)));
+
+    EnableVertexAttribArray(3);       // id
+    VertexAttribPointer(3, 4, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(8 * sizeof(float)));
+
+    EnableVertexAttribArray(4);       // weight
+    VertexAttribPointer(4, 4, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(12 * sizeof(float)));
 
     BindBuffer(BufferType::ARRAY, RD_FALSE);
     BindBuffer(BufferType::VERTEX, RD_FALSE);
@@ -300,6 +337,8 @@ void Renderer::SetupBuffer(Buffer& pVBO, Buffer& pEBO, BufferVAO& pVAO)
     DisableVertexAttribArray(0);
     DisableVertexAttribArray(1);
     DisableVertexAttribArray(2);
+    DisableVertexAttribArray(3);
+    DisableVertexAttribArray(4);
 }
 
 void Renderer::SetupBuffer(Buffer& pVBO, BufferVAO& pVAO)
@@ -395,4 +434,90 @@ bool GigRenderer::Renderer::LinkShader(unsigned int& pProgram, unsigned int& pVe
     }
 
     return true;
+}
+
+void Renderer::LoadUIImage(UIImage* img)
+{
+    glGenVertexArrays(1, &img->GetVAO());
+    glGenBuffers(1, &img->GetVBO());
+    glBindVertexArray(img->GetVAO());
+    glBindBuffer(GL_ARRAY_BUFFER, img->GetVBO());
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void Renderer::LoadFont(Font* f) const
+{
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+    {
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        return;
+    }
+
+    FT_Face face;
+    if (FT_New_Face(ft, f->GetFilePath().c_str(), 0, &face))
+    {
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        return;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, 48);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+
+    for (unsigned int c = 0; c < 128; c++)
+    {
+        // load character glyph
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            continue;
+        }
+        // generate texture
+        unsigned int texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
+        // set texture options
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // now store character for later use
+        Character character = {
+            texture,
+            lm::FVec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            lm::FVec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            (unsigned int)face->glyph->advance.x
+        };
+
+        f->AddCharacter(std::pair<char, Character>(c, character));
+    }
+
+    glGenVertexArrays(1, &f->GetVAO());
+    glGenBuffers(1, &f->GetVBO());
+    glBindVertexArray(f->GetVAO());
+    glBindBuffer(GL_ARRAY_BUFFER, f->GetVBO());
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
 }

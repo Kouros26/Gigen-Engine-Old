@@ -9,9 +9,10 @@ public:
 
 	lm::FMat4 CreateViewMatrix();
 
-	float GetFov();
-	float GetNear();
-	float GetFar();
+	[[nodiscard]] float GetFov() const;
+	[[nodiscard]] float GetNear() const;
+	[[nodiscard]] float GetFar() const;
+	[[nodiscard]] float GetRatio() const;
 
 	void SetFov(float fov);
 	void SetNear(float near);
@@ -22,6 +23,7 @@ public:
 	lm::FVec3 GetFront();
 	lm::FVec3 GetUp();
 	lm::FVec3 GetRight();
+	virtual std::string GetType() override;
 
 private:
 	void UpdateProjectionMatrix();

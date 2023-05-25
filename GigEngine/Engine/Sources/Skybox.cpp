@@ -6,20 +6,21 @@
 
 using namespace GigRenderer;
 
-Skybox::Skybox()
+Skybox::Skybox() : GameObject("SkyBox")
 {
-    SetModel(g_SkyboxModelPath);
-    SetTexture(g_SkyboxTexturePath);
-    GetTransform().AddRotation(lm::FVec3(180, 0, 0));
+	SetModel(g_SkyboxModelPath);
+	SetTexture(g_SkyboxTexturePath);
+	GetTransform().AddRotation(lm::FVec3(180, 0, 0));
 
-    VertexShader* mainVertex = ResourceManager::Get<VertexShader>("Resources/Shaders/vertSkybox.vert");
-    FragmentShader* mainFragment = ResourceManager::Get<FragmentShader>("Resources/Shaders/fragSkybox.frag");
+	VertexShader* mainVertex = ResourceManager::Get<VertexShader>("Engine/Shaders/vertSkybox.vert");
+	FragmentShader* mainFragment = ResourceManager::Get<FragmentShader>("Engine/Shaders/fragSkybox.frag");
 
-    if (!shaderProgram.Link(mainVertex, mainFragment))
-        std::cout << "Error linking main shader" << std::endl;
+	if (!shaderProgram.Link(mainVertex, mainFragment))
+		std::cout << "Error linking main shader" << std::endl;
 
-    ModelLocation = shaderProgram.GetUniform("model");
-    viewProjLocation = shaderProgram.GetUniform("viewProj");
+	ModelLocation = RENDERER.GetUniformLocation(shaderProgram.GetId(), "model");
+	viewProjLocation = RENDERER.GetUniformLocation(shaderProgram.GetId(), "viewProj");
+	ColorLocation = RENDERER.GetUniformLocation(shaderProgram.GetId(), "textColor");
 }
 
 Skybox::~Skybox()
@@ -28,21 +29,34 @@ Skybox::~Skybox()
 
 void Skybox::Draw()
 {
-    shaderProgram.Use();
+	if (!IsActive()) return;
 
-    if (Application::IsInEditor() || Application::IsUsingEditorCam())
-    {
-        GetTransform().SetWorldPosition(Application::GetEditorCamera().GetTransform().GetWorldPosition());
-    }
-    else if(Camera* cam = GameObjectManager::GetCurrentCamera())
-    {
-        GetTransform().SetWorldPosition(cam->GetTransform().GetWorldPosition());
-    }
+	shaderProgram.Use();
 
-    RENDERER.SetUniformValue(viewProjLocation, UniformType::MAT4, lm::FMat4::ToArray(Application::GetViewProj()));
-    RENDERER.SetUniformValue(ModelLocation, UniformType::MAT4, lm::FMat4::ToArray(GetTransform().GetMatrix()));
+	if (Application::IsInEditor() || Application::IsUsingEditorCam())
+	{
+		GetTransform().SetWorldPosition(Application::GetEditorCamera().GetTransform().GetWorldPosition());
+	}
+	else if (Camera* cam = GameObjectManager::GetCurrentCamera())
+	{
+		GetTransform().SetWorldPosition(cam->GetTransform().GetWorldPosition());
+	}
 
-    UpdateRender();
+	RENDERER.SetUniformValue(viewProjLocation, UniformType::MAT4, &Application::GetViewProj());
+	RENDERER.SetUniformValue(ModelLocation, UniformType::MAT4, &GetTransform().MatrixGetter());
+	RENDERER.SetUniformValue(ColorLocation, UniformType::VEC3, &color);
 
-    shaderProgram.UnUse();
+	UpdateRender();
+
+	shaderProgram.UnUse();
+}
+
+lm::FVec3& Skybox::GetColor()
+{
+	return color;
+}
+
+void Skybox::SetColor(lm::FVec3 col)
+{
+	color = col;
 }

@@ -1,8 +1,27 @@
 #include "Component.h"
 
 Component::Component(GameObject* gameObject)
-	:gameObject(gameObject)
+    :gameObject(gameObject)
 {}
+
+GameObject* Component::GetGameObject() const
+{
+    return gameObject;
+}
+
+std::string Component::GetType()
+{
+    const std::string type(typeid(this).name());
+    return type.substr(6, type.size() - 16);
+}
+
+void Component::Update(float pDeltaTime)
+{
+}
+
+void Component::LateUpdate(float pDeltaTime)
+{
+}
 
 Component::~Component()
 {
@@ -12,34 +31,6 @@ void Component::Start()
 {
 }
 
-void Component::Update()
+void Component::Awake()
 {
-}
-
-void Script::Awake()
-{
-}
-
-void Script::LateUpdate()
-{
-}
-
-void TestScript::Awake()
-{
-	std::cout << "This is "<< gameObject->GetName() << "'s awake function" << std::endl;
-}
-
-void TestScript::Start()
-{
-	std::cout << "This is "<< gameObject->GetName() << "'s start function" << std::endl;
-}
-
-void TestScript::Update()
-{
-	std::cout << "This is "<< gameObject->GetName() << "'s update" << std::endl;
-}
-
-void TestScript::LateUpdate()
-{
-	std::cout << "This is " << gameObject->GetName() << "'s late update" << std::endl;
 }

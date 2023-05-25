@@ -4,10 +4,10 @@
 
 class ShaderProgram;
 
-const char* const g_SkyboxModelPath = "Resources/Models/Skybox/cube.obj";
-const char* const g_SkyboxTexturePath = "Resources/Textures/Skybox/default.png";
+const char* const g_SkyboxModelPath = "Engine/Models/Skybox/cube.obj";
+const char* const g_SkyboxTexturePath = "Engine/Textures/Skybox/default.png";
 
-class Skybox : GameObject
+class Skybox : public GameObject
 {
 public:
 	Skybox();
@@ -15,8 +15,13 @@ public:
 
 	void Draw();
 
+	lm::FVec3& GetColor();
+	void SetColor(lm::FVec3 col);
+
 private:
-	int viewProjLocation;
-	int ModelLocation;
+	lm::FVec3 color = lm::FVec3(1);
+	unsigned int viewProjLocation;
+	unsigned int ColorLocation;
+	unsigned int ModelLocation;
 	ShaderProgram shaderProgram;
 };

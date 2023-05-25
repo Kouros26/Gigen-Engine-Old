@@ -11,5 +11,5 @@ public:
 	void Draw() override;
 
 private:
-	void DrawPlayPause();
+	void DrawPlayPause() const;
 };

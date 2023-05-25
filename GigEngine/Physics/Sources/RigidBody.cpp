@@ -8,12 +8,32 @@ RigidBody::RigidBody(GameObject* pOwner)
 
 RigidBody::~RigidBody()
 {
-	WorldPhysics::RemoveRigidBodyFromWorld(body);
+	WorldPhysics::GetInstance().RemoveRigidBodyFromWorld(*body);
+
+	owner = nullptr;
 	delete body;
+	delete collisionCallBacks;
+	delete rbShape;
 }
 
 void RigidBody::SetRBState(const RBState& pState) const
 {
+	if (pState == state)
+		return;
+
+	switch (state)
+	{
+	case RBState::DYNAMIC:
+		body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_DYNAMIC_OBJECT);
+		break;
+	case RBState::KINETIC:
+		body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+		break;
+	case RBState::STATIC:
+		body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_STATIC_OBJECT);
+		break;
+	}
+
 	switch (pState)
 	{
 	case RBState::DYNAMIC:
@@ -97,6 +117,118 @@ void RigidBody::AddRigidBodyScale(const lm::FVec3& pAddedScale) const
 	rbShape->setLocalScaling(rbShape->getLocalScaling() + scale);
 }
 
+void RigidBody::AddForce(const float pValue) const
+{
+	body->applyForce(btVector3(pValue, pValue, pValue), { 0,0,0 });
+}
+
+void RigidBody::AddForce(const lm::FVec3& pValue) const
+{
+	body->applyForce(btVector3(pValue.x, pValue.y, pValue.z), { 0,0,0 });
+}
+
+void RigidBody::AddTorque(const float pValue) const
+{
+	body->applyTorque(btVector3(pValue, pValue, pValue));
+}
+
+void RigidBody::AddTorque(const lm::FVec3& pValue) const
+{
+	body->applyTorque(btVector3(pValue.x, pValue.y, pValue.z));
+}
+
+void RigidBody::SetVelocity(const lm::FVec3& pValue) const
+{
+	body->setLinearVelocity(btVector3(pValue.x, pValue.y, pValue.z));
+}
+
+void RigidBody::SetAngularVelocity(const lm::FVec3& pValue) const
+{
+	body->setAngularVelocity(btVector3(pValue.x, pValue.y, pValue.z));
+}
+
+float RigidBody::GetFriction() const
+{
+	return body->getFriction();
+}
+
+void RigidBody::SetFriction(const float pValue) const
+{
+	body->setFriction(pValue);
+}
+
+void RigidBody::SetBounciness(const float pValue) const
+{
+	body->setRestitution(pValue);
+}
+
+lm::FVec3 RigidBody::GetLinearVelocity() const
+{
+	const btVector3 linearVelocity = body->getLinearVelocity();
+	return { linearVelocity.x(), linearVelocity.y(), linearVelocity.z() };
+}
+
+float RigidBody::GetBounciness() const
+{
+	return body->getRestitution();
+}
+
+lm::FVec3 RigidBody::GetAngularVelocity() const
+{
+	const btVector3 angularVelocity = body->getAngularVelocity();
+	return { angularVelocity.x(), angularVelocity.y(), angularVelocity.z() };
+}
+
+void RigidBody::SetLinearFactor(const float pValue) const
+{
+	body->setAngularFactor(btVector3(pValue, pValue, pValue));
+}
+
+void RigidBody::SetLinearFactor(const lm::FVec3& pValue) const
+{
+	body->setAngularFactor(btVector3(pValue.x, pValue.y, pValue.z));
+}
+
+void RigidBody::SetAngularFactor(const float pValue) const
+{
+	body->setAngularFactor(pValue);
+}
+
+lm::FVec3 RigidBody::GetLinearFactor() const
+{
+	return { body->getAngularFactor().x(), body->getAngularFactor().y(), body->getAngularFactor().z() };
+}
+
+lm::FVec3 RigidBody::GetAngularFactor() const
+{
+	const btVector3 angularFactor = body->getAngularFactor();
+	return { angularFactor.x(), angularFactor.y(), angularFactor.z() };
+}
+
+bool RigidBody::IsTrigger()
+{
+	return false;
+}
+
+void RigidBody::SetTrigger(const bool pIsTrigger)
+{
+}
+
+void RigidBody::AddImpulse(const float pValue) const
+{
+	body->applyCentralImpulse(btVector3(pValue, pValue, pValue));
+}
+
+void RigidBody::AddImpulse(const lm::FVec3& pValue) const
+{
+	body->applyCentralImpulse(btVector3(pValue.x, pValue.y, pValue.z));
+}
+
+bool RigidBody::IsGravityEnabled() const
+{
+	return body->getGravity() != btVector3({ 0,0,0 });
+}
+
 btRigidBody* RigidBody::GetRigidBody() const
 {
 	return body;
@@ -127,9 +259,32 @@ btScalar& RigidBody::GetMass()
 	return mass;
 }
 
+int RigidBody::GetCollisionFlag() const
+{
+	switch (body->getCollisionFlags())
+	{
+	case btCollisionObject::CF_KINEMATIC_OBJECT:
+		return static_cast<int>(RBState::KINETIC);
+	case btCollisionObject::CF_STATIC_OBJECT:
+		return static_cast<int>(RBState::STATIC);
+	default:
+		return static_cast<int>(RBState::DYNAMIC);
+	}
+}
+
 const lm::FVec3& RigidBody::GetScale()
 {
 	return scale;
+}
+
+btTransform RigidBody::GetTransfrom() const
+{
+	return transform;
+}
+
+void RigidBody::SetMass(btScalar pMass)
+{
+	mass = pMass;
 }
 
 void RigidBody::SetScale(const lm::FVec3& pNewScale)
@@ -145,4 +300,22 @@ void RigidBody::SetGravityEnabled(const bool pState) const
 
 	else
 		body->setGravity({ 0,-9.81f,0, });
+}
+
+void RigidBody::ClearForces() const
+{
+	SetVelocity(0);
+	SetAngularVelocity(0);
+	body->clearForces();
+}
+
+void RigidBody::SetGravity(const lm::FVec3& pValue) const
+{
+	body->setGravity({ pValue.x, pValue.y, pValue.z });
+}
+
+lm::FVec3 RigidBody::GetGravity() const
+{
+	const btVector3 gravity = body->getGravity();
+	return { gravity.x(), gravity.y(), gravity.z() };
 }

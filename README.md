@@ -16,6 +16,7 @@
 
 ## Features
 
+- Skeletal Animation
 - Scripting in lua
 - Physics
 - Editor

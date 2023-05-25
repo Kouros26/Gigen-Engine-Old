@@ -17,6 +17,12 @@ namespace GigInput
 		PRESS = 1
 	};
 
+	enum class KeyState
+	{
+		RELEASE = 0,
+		PRESS = 1
+	};
+
 	enum class Keys
 	{
 		ESCAPE = 256,
@@ -71,6 +77,8 @@ namespace GigInput
 		F12 = 301,
 		LAST = 348,
 		TAB = 258,
+		ENTER = 257,
+		BACKSPACE = 259
 	};
 
 	struct Mouse
@@ -86,10 +94,16 @@ namespace GigInput
 
 		double wheelOffsetY;
 
+		bool isOnViewPort = false;
+
 		bool rightClick;
 		bool leftClick;
 
+		bool leftClickOnce;
+
 		bool wheelClick;
+
+		bool OnLeftClick();
 	};
 
 	class Inputs
@@ -97,9 +111,13 @@ namespace GigInput
 	public:
 		Inputs() = delete;
 
-		static bool GetKey(Keys pKey);
+		static bool GetKey(const Keys& pKey);
 
-		static Mouse GetMouse();
+		static bool GetKeyDown(const Keys& pKey);
+
+		static bool GetKeyUp(const Keys& pKey);
+
+		static Mouse& GetMouse();
 
 		static void UpdateKey(int key, int action);
 
@@ -107,6 +125,7 @@ namespace GigInput
 
 		static void UpdateMouseButton(int button, int action);
 		static void UpdateMouseWheelOffset(double offset);
+		static void SetMouseIsOnViewPort(bool b);
 
 	private:
 		inline static Mouse mouse;

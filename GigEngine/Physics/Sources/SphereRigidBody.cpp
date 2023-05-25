@@ -3,7 +3,7 @@
 #include "WorldPhysics.h"
 
 SphereRigidBody::SphereRigidBody(float pRadius, const lm::FVec3& pScale, const lm::FVec3& pPos, float pMass,
-                                 GameObject* pOwner)
+	GameObject* pOwner)
 	: RigidBody(pOwner), radius(pRadius)
 {
 	scale = pScale;
@@ -27,7 +27,6 @@ SphereRigidBody::SphereRigidBody(float pRadius, const lm::FVec3& pScale, const l
 	std::function<void(const Collision& collision)> enter =
 		[pOwner](const Collision& collision)
 	{
-
 		pOwner->OnCollisionEnter(collision);
 	};
 
@@ -42,10 +41,17 @@ SphereRigidBody::SphereRigidBody(float pRadius, const lm::FVec3& pScale, const l
 	collisionCallBacks->onExit = CollisionExitCallBack(exit);
 	body->setUserPointer(owner);
 
-	WorldPhysics::AddRigidBodyInWorld(body);
+	WorldPhysics::GetInstance().AddRigidBodyInWorld(*body);
 }
 
 float SphereRigidBody::GetRadius() const
 {
 	return radius;
+}
+
+void SphereRigidBody::SetRadius(float pRadius)
+{
+	btSphereShape* shape = (btSphereShape*)rbShape;
+	radius = pRadius;
+	shape->setUnscaledRadius(radius);
 }

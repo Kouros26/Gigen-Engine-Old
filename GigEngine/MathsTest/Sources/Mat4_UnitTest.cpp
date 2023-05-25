@@ -13,6 +13,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include "Vec3/FVec3.hpp"
+#include "glm/gtx/matrix_decompose.hpp"
 
 using namespace lm;
 
@@ -33,6 +34,11 @@ CHECK(Mat[3][0] == Catch::Approx(GlmMat[3][0])); \
 CHECK(Mat[3][1] == Catch::Approx(GlmMat[3][1])); \
 CHECK(Mat[3][2] == Catch::Approx(GlmMat[3][2])); \
 CHECK(Mat[3][3] == Catch::Approx(GlmMat[3][3]));
+
+#define CHECK_VECTOR3(Vec, VecGlm)\
+ CHECK(Vec.x == Catch::Approx(VecGlm.x));\
+ CHECK(Vec.y == Catch::Approx(VecGlm.y));\
+ CHECK(Vec.z == Catch::Approx(VecGlm.z))
 
 TEST_CASE("Mat4", "[.all][matrice][Mat4]")
 {

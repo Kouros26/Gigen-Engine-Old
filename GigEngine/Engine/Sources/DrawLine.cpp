@@ -45,8 +45,8 @@ float* Line::GetColor()
 
 void Lines::Init()
 {
-	auto* mainVertex = ResourceManager::Get<VertexShader>("Resources/Shaders/vertLine.vert");
-	auto* mainFragment = ResourceManager::Get<FragmentShader>("Resources/Shaders/fragLine.frag");
+	auto* mainVertex = ResourceManager::Get<VertexShader>("Engine/Shaders/vertLine.vert");
+	auto* mainFragment = ResourceManager::Get<FragmentShader>("Engine/Shaders/fragLine.frag");
 
 	if (!shaderProgram.Link(mainVertex, mainFragment))
 		std::cout << "Error linking drawLine shader" << std::endl;
@@ -64,7 +64,7 @@ void Lines::DrawLines()
 {
 	shaderProgram.Use();
 
-	RENDERER.SetUniformValue(MVPLocation, UniformType::MAT4, lm::FMat4::ToArray(Application::GetViewProj()));
+	RENDERER.SetUniformValue(MVPLocation, UniformType::MAT4, &Application::GetViewProj());
 
 	DrawDebugLines();
 	RENDERER.Disable(RD_DEPTH_TEST);

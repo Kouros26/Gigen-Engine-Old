@@ -26,7 +26,8 @@ void CustomMotionState::setWorldTransform(const btTransform& pCenterOfMassWorldT
 
 	physicsMatrix = ScalarToMat4(worldMatrix);
 	lm::FMat4::Decompose(physicsMatrix, physicsPosition, physicsRotation, physicsScale);
-	owner->GetTransform().AddPosition(physicsPosition - owner->GetTransform().GetWorldPosition());
+	owner->GetTransform().RigidBodyAddPosition(physicsPosition - owner->GetTransform().GetWorldPosition());
+	owner->GetTransform().RigidBodyAddRotation(physicsRotation - owner->GetTransform().GetWorldRotation());
 }
 
 lm::FMat4 CustomMotionState::ScalarToMat4(const btScalar * pScalar)

@@ -1,6 +1,6 @@
 #pragma once
 #include "FPSDisplay.h"
-#include "FileDisplay.h"
+#include "ToolsDisplay.h"
 #include "GameObjectInspector.h"
 #include "HierarchyDisplay.h"
 #include "MenuBarDisplay.h"
@@ -10,22 +10,39 @@
 
 struct GLFWwindow;
 
+enum class Theme
+{
+    Dark,
+    Light,
+    Black,
+    Classic,
+    Dracula,
+    Cherry,
+    Grey,
+    Blue,
+    ClassicDark,
+    ClassicLight,
+    Cinder
+};
+
 class Interface
 {
 public:
 
-	Interface(GLFWwindow* pWindow, const char* pGlslVersion);
-	~Interface();
+    Interface(GLFWwindow* pWindow, const char* pGlslVersion);
+    ~Interface();
 
-	void BeginFrame();
-	static void Draw();
+    void BeginFrame();
+    static void Draw();
+
+    static void SetTheme(Theme pTheme);
 
 private:
-	static void SetColorDark();
 
-	FPSDisplay fps;
-	GameObjectInspector gameObjInspector;
-	HierarchyDisplay hierarchy;
-	FileDisplay fileDisplay;
-	MenuBarDisplay menuBar;
+    void SetFont();
+
+    GameObjectInspector gameObjInspector;
+    HierarchyDisplay hierarchy;
+    ToolsDisplay fileDisplay;
+    MenuBarDisplay menuBar;
 };

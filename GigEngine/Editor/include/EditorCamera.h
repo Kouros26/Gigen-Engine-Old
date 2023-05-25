@@ -12,6 +12,8 @@ public:
 private:
 	void ChangeSpeed();
 	void Move();
+	void Translate();
+	void Zoom();
 	void Look();
 
 	float speed = 2;

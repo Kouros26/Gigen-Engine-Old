@@ -42,7 +42,7 @@ BoxRigidBody::BoxRigidBody(const lm::FVec3& pHalfExtents, const lm::FVec3& pScal
 	collisionCallBacks->onExit = CollisionExitCallBack(exit);
 	body->setUserPointer(owner);
 
-	WorldPhysics::AddRigidBodyInWorld(body);
+	WorldPhysics::GetInstance().AddRigidBodyInWorld(*body);
 }
 
 BoxRigidBody::~BoxRigidBody()
