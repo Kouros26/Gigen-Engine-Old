@@ -1,19 +1,99 @@
 B
+*DirLight
+.0.500000 22.100000 1.600000 1.000000 0.000000 0.000000
+NLight
+W0.000000 26.200001 0.000000 0.000000 -146.100006 20.000000 1.000000 1.000000 1.000000
+C1 GigScripting::Behaviour NewScript0 
 *GameObject
-Nchest
-W-0.200000 13.100000 10.000000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
-Pcar
-MEngine/Models/chest.obj
-TEngine/Textures/default.png
+NPlayer
+W0.000000 -32.079193 0.000000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rcapsule 1.000000 3.500000 1.000000 1.000000 1.000000 1.000000 true 0
+C10 GigScripting::Behaviour Player AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  AudioSource ../../../Resources/Engine/Audio/shot.mp3 true false false 0.500000 5.000000  
 *GameObject
-Ncar
-W-6.700000 10.000000 10.000000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
-Rcapsule 1.000000 5.000000 0.577350 0.577350 0.577350 10.000000 true
-MEngine/Models/Car.fbx
-TEngine/Textures/default.png
-*GameObject
-NGround
-W-6.700000 0.000000 10.000000 0.000000 0.000000 0.000000 50.000000 1.000000 50.000000
-Rbox 1.000000 1.000000 1.000000 50.000000 1.000000 50.000000 0.000000 false
+NSpaceBox
+W9.607746 10.520662 5.826410 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C2 GigScripting::Behaviour SpaceBox AudioSource ../../../Resources/Engine/Audio\jazz.mp3 false true true 1.000000 10.000000  
 MEngine/Models/Basics/Cube.FBX
-TEngine/Textures/default.png
+T../../../Resources/Engine/Textures\metal.png
+*GameObject
+NLevel
+W0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 7.000000 2.000000 7.000000
+M../../../Resources/Engine/Models\Corridor.fbx
+TEngine/Textures/default2.png
+*PointLight
+.1.000000 0.500000 0.500000 0.100000 0.020000 0.010000 1.000000 1.000000 1.000000
+NLight
+W0.000000 26.000000 0.000000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+*GameObject
+NDown Collider
+W0.000000 -36.099998 0.000000 0.000000 0.000000 0.000000 18.099998 1.000000 10.500000
+Rbox 1.000000 1.000000 1.000000 18.099998 1.000000 10.500000 0.000000 false 2
+PLevel
+*GameObject
+NUp Collider
+W0.000000 35.700001 0.000000 0.000000 0.000000 0.000000 18.099998 1.000000 10.500000
+Rbox 1.000000 1.000000 1.000000 18.099998 1.000000 10.500000 0.000000 false 2
+PLevel
+*GameObject
+NFront Collider
+W0.000000 0.000000 -10.600000 0.000000 0.000000 0.000000 21.000000 34.599998 1.000000
+Rbox 1.000000 1.000000 1.000000 21.000000 34.599998 1.000000 0.000000 false 2
+PLevel
+*GameObject
+NBack Collider
+W0.000000 0.000000 10.500000 0.000000 0.000000 0.000000 21.000000 34.599998 1.000000
+Rbox 1.000000 1.000000 1.000000 21.000000 34.599998 1.000000 0.000000 false 2
+PLevel
+*GameObject
+NLeft Collider
+W-17.600000 0.000000 -1.400000 0.000000 90.000000 0.000000 12.900000 34.599998 1.000000
+Rbox 1.000000 1.000000 1.000000 12.900000 34.599998 1.000000 0.000000 false 2
+PLevel
+*GameObject
+NRight Collider
+W17.700001 0.000000 -1.400000 0.000000 90.000000 0.000000 12.900000 34.599998 1.000000
+Rbox 1.000000 1.000000 1.000000 12.900000 34.599998 1.000000 0.000000 false 2
+PLevel
+*GameObject
+NSpaceBox
+W5.800000 6.500000 6.300000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C1 GigScripting::Behaviour SpaceBox 
+MEngine/Models/Basics/Cube.FBX
+T../../../Resources/Engine/Textures\fire.jpg
+*GameObject
+NSpaceBox
+W0.700000 6.500000 -0.200000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C1 GigScripting::Behaviour SpaceBox 
+MEngine/Models/Basics/Cube.FBX
+T../../../Resources/Engine/Textures\stone.png
+*GameObject
+NSpaceBox
+W6.100000 10.500000 -0.200000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C1 GigScripting::Behaviour SpaceBox 
+MEngine/Models/Basics/Cube.FBX
+T../../../Resources/Engine/Textures\wood.png
+*GameObject
+NSpaceBox
+W-4.100000 10.500000 -0.200000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C1 GigScripting::Behaviour SpaceBox 
+MEngine/Models/Basics/Cube.FBX
+T../../../Resources/Engine/Textures\default.png
+*GameObject
+NKillerBox
+W0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C1 GigScripting::Behaviour KillerBox 
+MEngine/Models/Basics/Sphere.FBX
+TEngine/Textures/default2.png
+*GameObject
+NKillerBox
+W-6.400000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 1.000000 1.000000
+Rbox 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000 false 0
+C1 GigScripting::Behaviour KillerBox 
+MEngine/Models/Basics/Sphere.FBX
+TEngine/Textures/default2.png

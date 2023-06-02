@@ -55,6 +55,8 @@ public:
 
 	Component* Clone(GameObject* newGameObject) override;
 
+    std::string GetType() override;
+
     void AddState(Animation* pAnimation, const std::string& pStateName, const std::string& pParentState, float pTimeToTransitionToThisState);
     void RemoveState(const std::string& pStateName);
 

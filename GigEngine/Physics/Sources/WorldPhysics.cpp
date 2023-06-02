@@ -167,6 +167,11 @@ void WorldPhysics::DrawDebug() const
     world->debugDrawWorld();
 }
 
+void WorldPhysics::SetGravity(const lm::FVec3& pGravity) const
+{
+    world->setGravity(btVector3(pGravity.x, pGravity.y, pGravity.z));
+}
+
 void WorldPhysics::CheckCollision()
 {
     if (!dispatcher)
@@ -212,11 +217,29 @@ void WorldPhysics::CheckCollision()
 
             const btPersistentManifold* tempInfo = std::get<2>(pair);
 
-            if (callBacks->onEnter)
-                callBacks->onEnter(Collision(go1, tempInfo->getContactPoint(i)));
+            if (tmp0->GetRBState() == btCollisionObject::CF_NO_CONTACT_RESPONSE)
+            {
+                if (callBacks->triggerEnter)
+                    callBacks->triggerEnter(Collision(go1, tempInfo->getContactPoint(i)));
+            }
 
-            if (callBacks2->onEnter)
-                callBacks2->onEnter(Collision(go0, tempInfo->getContactPoint(i)));
+            else
+            {
+                if (callBacks->onEnter)
+                    callBacks->onEnter(Collision(go1, tempInfo->getContactPoint(i)));
+            }
+
+            if (tmp1->GetRBState() == btCollisionObject::CF_NO_CONTACT_RESPONSE)
+            {
+                if (callBacks2->triggerEnter)
+                    callBacks2->triggerEnter(Collision(go1, tempInfo->getContactPoint(i)));
+            }
+
+            else
+            {
+                if (callBacks2->onEnter)
+					callBacks2->onEnter(Collision(go0, tempInfo->getContactPoint(i)));
+            }
         }
 
         else
@@ -235,11 +258,29 @@ void WorldPhysics::CheckCollision()
 
             const btPersistentManifold* tempInfo = std::get<2>(pair);
 
-            if (callBacks->onExit)
-                callBacks->onExit(Collision(go1, {}));
+            if (tmp0->GetRBState() == btCollisionObject::CF_NO_CONTACT_RESPONSE)
+            {
+                if (callBacks->triggerExit)
+                    callBacks->triggerExit(Collision(go1, {}));
+            }
 
-            if (callBacks2->onExit)
-                callBacks2->onExit(Collision(go0, {}));
+            else
+            {
+                if (callBacks->onExit)
+                    callBacks->onExit(Collision(go1,{ }));
+            }
+
+            if (tmp1->GetRBState() == btCollisionObject::CF_NO_CONTACT_RESPONSE)
+            {
+                if (callBacks2->triggerExit)
+                    callBacks2->triggerExit(Collision(go1, {}));
+            }
+
+            else
+            {
+                if (callBacks2->onExit)
+                    callBacks2->onExit(Collision(go0, {}));
+            }
         }
         ++i;
     }

@@ -7,6 +7,8 @@ namespace GigScripting
     {
         std::function<void(GameObject*)> OnCollisionEnter;
         std::function<void(GameObject*)> OnCollisionExit;
+        std::function<void(GameObject*)> OnTriggerEnter;
+        std::function<void(GameObject*)> OnTriggerExit;
         std::function<void(GameObject*)> defaultReturn;
     };
 

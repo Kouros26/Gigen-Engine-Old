@@ -31,7 +31,6 @@ public:
 
 private:
 
-	GameObject* sk;
 	static inline Window window;
 	static inline EditorCamera editorCamera;
 
@@ -48,12 +47,15 @@ private:
 	static inline ShaderProgram mainShader;
 	int viewProjLocation;
 	int ModelLocation;
+	int lightSpaceLocation;
 	int viewPosLocation;
 	int nbLightLocation;
 
 	void Init();
 	void InitMainShader();
 	void Draw();
+	void RenderScene();
+	void RenderSceneShadows();
 	void ClearWindow();
 	void UpdateGameObjectComponent();
 	void UpdateGameObjectRender() const;

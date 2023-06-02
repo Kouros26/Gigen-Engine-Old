@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "Vec3/FVec3.hpp"
+#include "Mat4/FMat4.hpp"
 #include "Skybox.h"
 
 class GameObject;
@@ -30,20 +31,22 @@ public:
 	static GameObject* CreateGameObject(const GameObject* other);
 	static GameObject* CreateGameObject(GameObject*&& other) noexcept = delete;
 
+	static void UpdateLightSpaceMatrix(Camera* cam);
+
 	//rule of 5
 	GameObject& operator=(const GameObject& other) const;
 	GameObject& operator=(GameObject&& other) noexcept;
 
-	static GameObject* CreateSpotLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
-		float constant = 0.5f, float linear = 0.5f, float quadratic = 0.5f,
-		float cutOff = 45, float outerCutOff = 90,
+	static GameObject* CreateSpotLight(float ambient = 0.0f, float diffuse = 0.5f, float specular = 0.5f,
+		float constant = 0.1f, float linear = 0.02f, float quadratic = 0.01f,
+		float cutOff = 10, float outerCutOff = 25,
 		const lm::FVec3& color = lm::FVec3(1));
 
-	static GameObject* CreatePointLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
-		float constant = 0.5f, float linear = 0.5f, float quadratic = 0.5f,
+	static GameObject* CreatePointLight(float ambient = 0.0f, float diffuse = 0.5f, float specular = 0.5f,
+		float constant = 0.1f, float linear = 0.02f, float quadratic = 0.01f,
 		const lm::FVec3& color = lm::FVec3(1));
 
-	static GameObject* CreateDirLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
+	static GameObject* CreateDirLight(float ambient = 0.0f, float diffuse = 0.5f, float specular = 0.5f,
 		const lm::FVec3& color = lm::FVec3(1));
 
 	static GameObject* CreateCamera();
@@ -54,7 +57,6 @@ public:
 	static void CreateSkyBox();
 	static Skybox* GetSkyBox();
 
-	//ok
 	static void SendLightsToShader();
 	static int GetDirLightSize();
 	static int GetPointLightSize();
@@ -67,8 +69,12 @@ public:
 	static GameObject* FindObjectByName(const std::string& name);
 	static GameObject* FindObjectById(unsigned int id);
 
+	static lm::FMat4& GetDirLightSpaceMatrix();
+
 private:
 	static GameObject* AddGameObject(GameObject* object);
+
+	inline static lm::FMat4 lightSpaceMatrix;
 
 	inline static Skybox* skybox = nullptr;
 	inline static Camera* currentCamera;

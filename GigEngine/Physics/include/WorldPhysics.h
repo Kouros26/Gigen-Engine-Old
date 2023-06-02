@@ -59,6 +59,8 @@ public:
     void UpdatePhysics(double pDeltaTime) const;
     void DrawDebug() const;
 
+    void SetGravity(const lm::FVec3& pGravity) const;
+
     btDiscreteDynamicsWorld* GetWorld();
 
     static WorldPhysics& GetInstance();

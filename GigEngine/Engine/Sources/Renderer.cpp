@@ -1,5 +1,6 @@
 #include <GLAD/glad.h>
 #include "Renderer.h"
+#include "ShadowMapping.h"
 #include "Font.h"
 #include "UIImage.h"
 #include "GLFW/glfw3.h"
@@ -167,27 +168,31 @@ int Renderer::GetUniformLocation(unsigned int pProgram, const char* pName)
 
 void Renderer::SetUniformValue(unsigned int pProgram, const char* pName, UniformType pType, void* pValue)
 {
-    int location = GetUniformLocation(pProgram, pName);
-    switch (pType)
-    {
-    case UniformType::FLOAT:
-        glUniform1f(location, *(float*)pValue);
-        break;
-    case UniformType::INT:
-        glUniform1i(location, *(int*)pValue);
-        break;
-    case UniformType::BOOL:
-        glUniform1i(location, *(bool*)pValue);
-        break;
-    case UniformType::VEC3:
-        glUniform3fv(location, 1, (float*)pValue);
-        break;
-    case UniformType::MAT4:
-        glUniformMatrix4fv(location, 1, GL_FALSE, (float*)pValue);
-        break;
-    default:
-        break;
-    }
+	int location = GetUniformLocation(pProgram, pName);
+	if (location < 0)
+	{
+		std::cout << pName << " not found in uniform" << std::endl;
+	}
+	switch (pType)
+	{
+	case UniformType::FLOAT:
+		glUniform1f(location, *(float*)pValue);
+		break;
+	case UniformType::INT:
+		glUniform1i(location, *(int*)pValue);
+		break;
+	case UniformType::BOOL:
+		glUniform1i(location, *(bool*)pValue);
+		break;
+	case UniformType::VEC3:
+		glUniform3fv(location, 1, (float*)pValue);
+		break;
+	case UniformType::MAT4:
+		glUniformMatrix4fv(location, 1, GL_FALSE, (float*)pValue);
+		break;
+	default:
+		break;
+	}
 }
 
 void Renderer::SetUniformValue(int pLocation, UniformType pType, void* pValue)
@@ -244,28 +249,28 @@ void Renderer::Clear(unsigned int pMask)
 
 void Renderer::LoadTexture(unsigned int& pTexture, int pWidth, int pHeight, const void* pData)
 {
-    glGenTextures(1, &pTexture);
-    BindTexture(GL_TEXTURE_2D, pTexture);
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pWidth, pHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pData);
-    glGenerateMipmap(GL_TEXTURE_2D);
+	glGenTextures(1, &pTexture);
+	BindTexture(GL_TEXTURE_2D, pTexture, 0);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pWidth, pHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pData);
+	glGenerateMipmap(GL_TEXTURE_2D);
 
-    BindTexture(GL_TEXTURE_2D, RD_FALSE);
+	BindTexture(GL_TEXTURE_2D, RD_FALSE, 0);
 }
 
 void Renderer::LoadImguiTexture(unsigned int& pTexture, int pWidth, int pHeight, const void* pData)
 {
-    glGenTextures(1, &pTexture);
-    BindTexture(GL_TEXTURE_2D, pTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+	glGenTextures(1, &pTexture);
+	BindTexture(GL_TEXTURE_2D, pTexture, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
 
     // Upload pixels into texture
 #if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
@@ -273,12 +278,13 @@ void Renderer::LoadImguiTexture(unsigned int& pTexture, int pWidth, int pHeight,
 #endif
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pWidth, pHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pData);
 
-    BindTexture(GL_TEXTURE_2D, RD_FALSE);
+	BindTexture(GL_TEXTURE_2D, RD_FALSE, 0);
 }
 
-void Renderer::BindTexture(unsigned int pTarget, unsigned int pTexture)
+void Renderer::BindTexture(unsigned int pTarget, unsigned int pTexture, unsigned int pos)
 {
-    glBindTexture(pTarget, pTexture);
+	glActiveTexture(GL_TEXTURE0 + pos);
+	glBindTexture(pTarget, pTexture);
 }
 
 void Renderer::DeleteTexture(unsigned int pTexture)
@@ -315,20 +321,20 @@ void Renderer::SetupBuffer(const Buffer& pVBO, const Buffer& pEBO, const BufferV
     BindBuffer(BufferType::ELEMENT, pEBO.id);
     BufferData(BufferType::ELEMENT, pEBO.size * sizeof(unsigned int), pEBO.data, RD_STATIC_DRAW);
 
-    EnableVertexAttribArray(0);       // position
-    VertexAttribPointer(0, 3, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)0);
+	EnableVertexAttribArray(0);       // position
+	VertexAttribPointer(0, 3, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)0);
 
-    EnableVertexAttribArray(1);       // normal
-    VertexAttribPointer(1, 3, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(3 * sizeof(float)));
+	EnableVertexAttribArray(1);       // normal
+	VertexAttribPointer(1, 3, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(3 * sizeof(float)));
 
-    EnableVertexAttribArray(2);       // texture
-    VertexAttribPointer(2, 2, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(6 * sizeof(float)));
+	EnableVertexAttribArray(2);       // texture
+	VertexAttribPointer(2, 2, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(6 * sizeof(float)));
 
-    EnableVertexAttribArray(3);       // id
-    VertexAttribPointer(3, 4, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(8 * sizeof(float)));
+	EnableVertexAttribArray(3);       // id
+	VertexAttribPointer(3, 4, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(8 * sizeof(float)));
 
-    EnableVertexAttribArray(4);       // weight
-    VertexAttribPointer(4, 4, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(12 * sizeof(float)));
+	EnableVertexAttribArray(4);       // weight
+	VertexAttribPointer(4, 4, RD_FLOAT, RD_FALSE, 16 * sizeof(float), (void*)(12 * sizeof(float)));
 
     BindBuffer(BufferType::ARRAY, RD_FALSE);
     BindBuffer(BufferType::VERTEX, RD_FALSE);
@@ -469,41 +475,41 @@ void Renderer::LoadFont(Font* f) const
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
 
-    for (unsigned int c = 0; c < 128; c++)
-    {
-        // load character glyph
-        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-        {
-            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-            continue;
-        }
-        // generate texture
-        unsigned int texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RED,
-            face->glyph->bitmap.width,
-            face->glyph->bitmap.rows,
-            0,
-            GL_RED,
-            GL_UNSIGNED_BYTE,
-            face->glyph->bitmap.buffer
-        );
-        // set texture options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // now store character for later use
-        Character character = {
-            texture,
-            lm::FVec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            lm::FVec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            (unsigned int)face->glyph->advance.x
-        };
+	for (unsigned int c = 0; c < 128; c++)
+	{
+		// load character glyph
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		// generate texture
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RED,
+			face->glyph->bitmap.width,
+			face->glyph->bitmap.rows,
+			0,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer
+		);
+		// set texture options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// now store character for later use
+		Character character = {
+			texture,
+			lm::FVec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			lm::FVec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			(unsigned int)face->glyph->advance.x
+		};
 
         f->AddCharacter(std::pair<char, Character>(c, character));
     }
@@ -518,6 +524,46 @@ void Renderer::LoadFont(Font* f) const
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    FT_Done_Face(face);
-    FT_Done_FreeType(ft);
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+}
+
+void GigRenderer::Renderer::BindFrameBuffer(unsigned int type, unsigned int buff)
+{
+	glBindFramebuffer(type, buff);
+}
+
+void GigRenderer::Renderer::DeleteFrameBuffer(unsigned int buff)
+{
+	glDeleteFramebuffers(1, &buff);
+}
+
+void GigRenderer::Renderer::InitShadowMapping() const
+{
+	glGenFramebuffers(1, &ShadowMapping::GetdepthMapFBO());
+
+	glGenTextures(1, &ShadowMapping::GetdepthMap());
+	glBindTexture(GL_TEXTURE_2D, ShadowMapping::GetdepthMap());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+		1920, 1080, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ShadowMapping::GetdepthMapFBO());
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowMapping::GetdepthMap(), 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GigRenderer::Renderer::RenderShadowMapping() const
+{
+	glViewport(0, 0, 1920, 1080);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ShadowMapping::GetdepthMapFBO());
+	glClear(GL_DEPTH_BUFFER_BIT);
 }

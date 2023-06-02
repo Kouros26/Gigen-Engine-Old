@@ -64,7 +64,7 @@ std::string AudioSource::GetType()
 
 void AudioSource::UpdateAudioEngine(Camera* cam)
 {
-    if (engine)
+    if (engine && cam)
     {
         lm::FVec3 pos = cam->GetTransform().GetWorldPosition();
         lm::FVec3 dir = -cam->GetFront();
@@ -130,7 +130,7 @@ void AudioSource::SetAudio(const std::string& path)
 
 void AudioSource::SetAudioWithLuaPath(const std::string& path)
 {
-    audioPath = "../../../Resources/Editor/" + path;
+    audioPath = "../../../Resources/" + path;
 }
 
 std::string AudioSource::GetAudio()

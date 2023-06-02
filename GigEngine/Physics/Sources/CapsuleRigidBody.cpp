@@ -35,9 +35,23 @@ CapsuleRigidBody::CapsuleRigidBody(float pRadius, float pHeight, const lm::FVec3
 		pOwner->OnCollisionExit(collision);
 	};
 
+	std::function<void(const Collision& collision)> triggerEnter =
+		[pOwner](const Collision& collision)
+	{
+		pOwner->OnTriggerEnter(collision);
+	};
+
+	std::function<void(const Collision& collision)> triggerExit =
+		[pOwner](const Collision& collision)
+	{
+		pOwner->OnTriggerExit(collision);
+	};
+
 	collisionCallBacks = new CollisionCallBacks();
 	collisionCallBacks->onEnter = CollisionEnterCallBack(enter);
 	collisionCallBacks->onExit = CollisionExitCallBack(exit);
+	collisionCallBacks->triggerEnter = CollisionEnterCallBack(triggerEnter);
+	collisionCallBacks->triggerExit = CollisionExitCallBack(triggerExit);
 	body->setUserPointer(owner);
 
 	WorldPhysics::GetInstance().AddRigidBodyInWorld(*body);

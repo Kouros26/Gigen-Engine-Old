@@ -8,7 +8,8 @@ enum class RBState
 {
     DYNAMIC,
     KINETIC,
-    STATIC
+    STATIC,
+    TRIGGER
 };
 
 enum class RigidBodyType
@@ -25,6 +26,8 @@ struct CollisionCallBacks
 {
     CollisionEnterCallBack onEnter;
     CollisionExitCallBack onExit;
+    CollisionEnterCallBack triggerEnter;
+    CollisionExitCallBack triggerExit;
 };
 
 class RigidBody
@@ -46,7 +49,7 @@ public:
     RigidBody(GameObject* pOwner);
     ~RigidBody();
 
-	void SetRBState(const RBState& pState) const;
+	void SetRBState(const RBState& pState);
 	void RemoveRBState(const RBState& pState) const;
 	void SetMotionState(CustomMotionState* pMotionState);
 
@@ -75,6 +78,7 @@ public:
     void SetLinearFactor(const float pValue) const;
     void SetLinearFactor(const lm::FVec3& pValue) const;
     void SetAngularFactor(const float pValue) const;
+    void SetAngularFactor(const lm::FVec3& pValue) const;
     [[nodiscard]] lm::FVec3 GetLinearFactor() const;
     [[nodiscard]] lm::FVec3 GetAngularFactor() const;
     static bool IsTrigger();
@@ -89,13 +93,15 @@ public:
     [[nodiscard]] CollisionCallBacks* GetCallBacks() const;
     RigidBodyType& GetShapeType();
     btScalar& GetMass();
-    int GetCollisionFlag() const;
+    [[nodiscard]] int GetCollisionFlag() const;
+    [[nodiscard]] int GetRBState() const;
     const lm::FVec3& GetScale();
-    btTransform GetTransfrom() const;
+    [[nodiscard]] btTransform& GetTransfrom();
     void SetMass(const float pValue);
 	void SetScale(const lm::FVec3& pNewScale);
     void SetGravityEnabled(const bool pState) const;
     void ClearForces() const;
     void SetGravity(const lm::FVec3& pValue) const;
+    void LockAxisOfRotation(const lm::FVec3& pAxis) const;
     [[nodiscard]] lm::FVec3 GetGravity() const;
 };

@@ -3,6 +3,7 @@
 #include "GameObjectInspector.h"
 #include "ToolsDisplay.h"
 #include "HierarchyDisplay.h"
+
 void InterfaceManager::DrawEditor()
 {
 	width = static_cast<float>(Application::GetWindow().GetWidth());

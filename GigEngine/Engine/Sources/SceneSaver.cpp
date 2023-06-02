@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <array>
 
+#include "UIManager.h"
+
 void ProcessedObject::Clear()
 {
 	type.clear();
@@ -73,6 +75,20 @@ void Scene::SaveScene(const std::string& pSceneName)
 
 		ProcessedObject::Clear();
 	}
+
+	for (int i = 0; i < UIManager::GetUIElements().size(); i++)
+	{
+		GetUIValues(UIManager::GetUIElement(i));
+		ProcessedObject::Clear();
+	}
+
+
+	for (int i = 0; i < UIManager::GetWorldElements().size(); i++)
+	{
+		GetUIValues(UIManager::GetWorldElement(i));
+		ProcessedObject::Clear();
+	}
+
 
 	file.close();
 
@@ -220,6 +236,7 @@ void Scene::GetValues(GameObject* pGameObject)
 		const float mass = pGameObject->GetRigidBody()->GetMass();
 		ProcessedObject::rigidBody += ' ' + VecToString(rbScale) + ' ' + std::to_string(mass);
 		pGameObject->GetRigidBody()->IsGravityEnabled() ? ProcessedObject::rigidBody += " true" : ProcessedObject::rigidBody += " false";
+		ProcessedObject::rigidBody += ' ' + std::to_string(pGameObject->GetRigidBody()->GetRBState());
 	}
 
 	//parent
@@ -284,6 +301,11 @@ void Scene::GetLightValues(DirLight* pGameObject) const
 	}
 
 	ProcessedObject::otherValues += ' ' + VecToString(pGameObject->GetColor()[0], pGameObject->GetColor()[1], pGameObject->GetColor()[2]);
+}
+
+void Scene::GetUIValues(UIElement* pUI) const
+{
+	//ProcessedObject::otherValues += 
 }
 
 void Scene::GetCameraValues(const Camera* pGameObject) const
@@ -394,6 +416,22 @@ void Scene::ProcessRigidBody(const std::string& pLine, GameObject* pOutGameObjec
 
 		if (strings[8] == "false")
 			pOutGameObject->GetRigidBody()->SetGravityEnabled(false);
+
+		switch (stoi(strings[9]))
+		{
+		case 0:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::DYNAMIC);
+			break;
+		case 1:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::KINETIC);
+			break;
+		case 2:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::STATIC);
+			break;
+		case 4:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::TRIGGER);
+			break;
+		}
 	}
 
 	else if (strings[0] == "capsule")
@@ -404,6 +442,22 @@ void Scene::ProcessRigidBody(const std::string& pLine, GameObject* pOutGameObjec
 
 		if (strings[7] == "false")
 			pOutGameObject->GetRigidBody()->SetGravityEnabled(false);
+
+		switch (stoi(strings[8]))
+		{
+		case 0:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::DYNAMIC);
+			break;
+		case 1:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::KINETIC);
+			break;
+		case 2:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::STATIC);
+			break;
+		case 4:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::TRIGGER);
+			break;
+		}
 	}
 
 	else if (strings[0] == "sphere")
@@ -413,7 +467,27 @@ void Scene::ProcessRigidBody(const std::string& pLine, GameObject* pOutGameObjec
 
 		if (strings[6] == "false")
 			pOutGameObject->GetRigidBody()->SetGravityEnabled(false);
+
+		switch (stoi(strings[7]))
+		{
+		case 0:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::DYNAMIC);
+			break;
+		case 1:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::KINETIC);
+			break;
+		case 2:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::STATIC);
+			break;
+		case 4:
+			pOutGameObject->GetRigidBody()->SetRBState(RBState::TRIGGER);
+			break;
+		}
 	}
+
+	const btQuaternion quat( lm::degreesToRadians(pOutGameObject->GetTransform().GetWorldRotation().y), lm::degreesToRadians(pOutGameObject->GetTransform().GetWorldRotation().x), lm::degreesToRadians(pOutGameObject->GetTransform().GetWorldRotation().z) );
+	pOutGameObject->GetRigidBody()->GetTransfrom().setRotation(quat);
+	pOutGameObject->GetRigidBody()->GetRigidBody()->setWorldTransform(pOutGameObject->GetRigidBody()->GetTransfrom());
 }
 
 void Scene::ProcessComponents(const std::string& pLine, GameObject* pOutGameObject)

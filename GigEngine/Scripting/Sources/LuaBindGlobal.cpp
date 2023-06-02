@@ -5,6 +5,7 @@
 #include "GameObjectManager.h"
 #include "WorldPhysics.h"
 #include "LuaBindComponent.h"
+#include "WorldPhysics.h"
 void GigScripting::LuaBinderGlobal::BindGlobals(sol::state& pLuaState)
 {
     using namespace GigInput;
@@ -35,23 +36,6 @@ void GigScripting::LuaBinderGlobal::BindGlobals(sol::state& pLuaState)
 
     );
 
-    luaState.create_named_table("Physics");
-
-    luaState["Physics"]["RayCast"] = sol::overload
-    (
-        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
-            const RayCastDebug, float, const std::vector<GameObject*>&, const lm::FVec3&, const lm::FVec3&) >(&WorldPhysics::RayCast),
-        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&)>(&WorldPhysics::RayCast),
-        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
-            const RayCastDebug, float)>(&WorldPhysics::RayCast),
-        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
-            const RayCastDebug, float, const lm::FVec3&)>(&WorldPhysics::RayCast),
-
-        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
-            const RayCastDebug, float, const lm::FVec3&, const lm::FVec3&)>(&WorldPhysics::RayCast)
-
-    );
-
     luaState.new_usertype<GameObjectManager>("GameObjectManager",
         "GetGameObject", &GameObjectManager::GetGameObject,
         "GetGameObjectByName", &GameObjectManager::FindObjectByName,
@@ -64,7 +48,8 @@ void GigScripting::LuaBinderGlobal::BindGlobals(sol::state& pLuaState)
             sol::resolve<GameObject * (const lm::FVec3&, const lm::FVec3&, const lm::FVec3&)>(&GameObjectManager::CreateGameObject)
 
         ),
-        "Destroy", &GameObjectManager::RemoveGameObject
+        "Destroy", &GameObjectManager::RemoveGameObject,
+        "CreateCamera", &GameObjectManager::CreateCamera
     );
 
     luaState.new_enum<Keys>("Keys",
@@ -135,6 +120,7 @@ void GigScripting::LuaBinderGlobal::BindGlobals(sol::state& pLuaState)
     luaState.create_named_table("Debug");
     luaState.create_named_table("Inputs");
     luaState.create_named_table("Tools");
+    luaState.create_named_table("Physics");
 
     luaState["Debug"]["Log"] = [](const std::string& pMessage) { GIG_LOG(pMessage); };
     luaState["Debug"]["LogWarning"] = [](const std::string& pMessage) { GIG_WARNING(pMessage); };
@@ -147,11 +133,27 @@ void GigScripting::LuaBinderGlobal::BindGlobals(sol::state& pLuaState)
     luaState["Inputs"]["GetMousePos"] = []()
     {
         auto mouse = Inputs::GetMouse();
-        return lm::FVec2(static_cast<float>(mouse.x), static_cast<float>(mouse.y));
+        return lm::FVec2(static_cast<float>(mouse.mouseOffsetX), static_cast<float>(mouse.mouseOffsetY));
     };
 
     luaState["Tools"]["BoolToInt"] = [](bool pBool) { return (int)(pBool); };
     luaState["Tools"]["IntToBool"] = [](int pInt) { return (bool)(pInt); };
     luaState["Tools"]["FloatToInt"] = [](float pFloat) { return (int)(pFloat); };
     luaState["Tools"]["IntToFloat"] = [](int pInt) { return (float)(pInt); };
+
+    luaState["Physics"]["RayCast"] = sol::overload
+    (
+        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
+            const RayCastDebug, float, const std::vector<GameObject*>&, const lm::FVec3&, const lm::FVec3&) >(&WorldPhysics::RayCast),
+        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&)>(&WorldPhysics::RayCast),
+        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
+            const RayCastDebug, float)>(&WorldPhysics::RayCast),
+        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
+            const RayCastDebug, float, const lm::FVec3&)>(&WorldPhysics::RayCast),
+
+        sol::resolve<bool(const lm::FVec3&, const lm::FVec3&, HitResult&,
+            const RayCastDebug, float, const lm::FVec3&, const lm::FVec3&)>(&WorldPhysics::RayCast)
+
+    );
+    luaState["Physics"]["SetGravity"] = &WorldPhysics::SetGravity;
 }

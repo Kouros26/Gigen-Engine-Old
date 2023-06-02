@@ -17,6 +17,9 @@ public:
 	static int GetUISize();
 	static int GetWorldSize();
 
+	static std::vector<UIElement*>& GetUIElements();
+	static std::vector<UIElement*>& GetWorldElements();
+
 	static UIElement* GetUIElement(unsigned int i);
 	static UIElement* GetWorldElement(unsigned int i);
 

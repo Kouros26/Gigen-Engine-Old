@@ -64,6 +64,18 @@ void GigScripting::LuaBindGameObject::BindGameObject(sol::state& pLuaState)
                 return audioSources[pIndex];
             else
                 return nullptr;
+        },
+            "CreateBoxRigidBody", [](GameObject& pThis, lm::FVec3& pHalfExtent, lm::FVec3& pScale, float pMass)
+        {
+            return pThis.CreateBoxRigidBody(pHalfExtent, pScale, pMass);
+        },
+            "CreateSphereRigidBody", [](GameObject& pThis, float pRadius, lm::FVec3& pScale, float pMass)
+        {
+            return pThis.CreateSphereRigidBody(pRadius, pScale, pMass);
+        },
+            "CreateCapsuleRigidBody", [](GameObject& pThis, float pRadius, float pHeight, lm::FVec3& pScale, float pMass)
+        {
+            return pThis.CreateCapsuleRigidBody(pRadius, pHeight, pScale, pMass);
         }
 
         );

@@ -7,7 +7,8 @@ class UIElement : public Object
 {
 public:
 	UIElement();
-	UIElement(const std::string& name);
+	UIElement(const std::string& pName);
+	UIElement(const std::string& pName, bool pIsWorld, int pIsImage, const lm::FVec3& pColor, const RectTransform& pRectTransform, const Transform& pTransform);
 	UIElement(UIElement& other);
 	virtual ~UIElement() override;
 
@@ -18,7 +19,7 @@ public:
 	int& GetIsImage();
 	void SetIsImage(int n);
 
-	bool GetIsWorld() const;
+	[[nodiscard]] bool GetIsWorld() const;
 	void SetIsWorld(bool b);
 
 	lm::FVec3& GetColor();

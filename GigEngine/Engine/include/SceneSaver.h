@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
-
 #include "AudioSource.h"
 #include "Camera.h"
 #include "Light.h"
+#include "UIElement.h"
 
 namespace formatting
 {
@@ -53,6 +53,7 @@ private:
 	void GetValues(GameObject* pGameObject);
 	void GetAudioValues(AudioSource* pAudioSource) const;
 	void GetLightValues(DirLight* pGameObject) const;
+	void GetUIValues(UIElement* pUI) const;
 	void GetCameraValues(const Camera* pGameObject) const;
 	bool IsLight(const std::string& pType);
 
@@ -64,8 +65,8 @@ private:
 	void ProcessComponents(const std::string& pLine, GameObject* pOutGameObject);
 	void LoadSound(const std::vector<std::string>& pStrings, GameObject* pOutGameObject, int i) const;
 
-	std::string VecToString(const float pFirst, const float pSecond, const float pThird) const;
-	std::string VecToString(const lm::FVec3& pVec) const;
+	[[nodiscard]] std::string VecToString(const float pFirst, const float pSecond, const float pThird) const;
+	[[nodiscard]] std::string VecToString(const lm::FVec3& pVec) const;
 	std::vector<std::string> SplitString(const std::string& pString, char delimiter = ' ');
 
 	std::string sceneFolder = "Scenes/";

@@ -54,7 +54,7 @@ class PointLight : public DirLight
 {
 public:
 	PointLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
-		float constant = 0.5f, float linear = 0.5f, float quadratic = 0.5f,
+		float constant = 0.1f, float linear = 0.02f, float quadratic = 0.01f,
 		const lm::FVec3& color = lm::FVec3(1));
 
 	virtual void SendToShader(const int& pos, int type) override;
@@ -80,8 +80,8 @@ class SpotLight : public PointLight
 {
 public:
 	SpotLight(float ambient = 0.5f, float diffuse = 0.5f, float specular = 0.5f,
-		float constant = 0.5f, float linear = 0.5f, float quadratic = 0.5f,
-		float cutOff = 45, float outerCutOff = 90,
+		float constant = 0.1f, float linear = 0.02f, float quadratic = 0.01f,
+		float cutOff = 10, float outerCutOff = 25,
 		const lm::FVec3& color = lm::FVec3(1));
 
 	virtual void SendToShader(const int& pos, int type) override;

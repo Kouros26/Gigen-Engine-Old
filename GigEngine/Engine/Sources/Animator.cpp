@@ -64,8 +64,14 @@ Component* Animator::Clone(GameObject* newGameObject)
 	return new Animator(newGameObject);
 }
 
+std::string Animator::GetType()
+{
+	const std::string type(typeid(this).name());
+	return type.substr(6, type.size() - 16);
+}
+
 void Animator::AddState(Animation* pAnimation, const std::string& pStateName, const std::string& pParentStateName,
-	float pTimeToTransitionToThisState)
+                        float pTimeToTransitionToThisState)
 {
 	if (pParentStateName == rootState.stateName)
 		AnimationState newState{ pAnimation, pStateName, &rootState, pTimeToTransitionToThisState };

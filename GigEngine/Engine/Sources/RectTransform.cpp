@@ -13,6 +13,7 @@ RectTransform::~RectTransform()
 void RectTransform::SetPosition(lm::FVec2 vec)
 {
 	hasChanged = true;
+
 	position = vec;
 }
 
@@ -29,6 +30,26 @@ void RectTransform::SetHeight(float h)
 void RectTransform::SetSize(lm::FVec2 vec)
 {
 	size = vec;
+}
+
+void RectTransform::SetAnchorX(AnchorX anchor)
+{
+	anchorX = anchor;
+}
+
+void RectTransform::SetAnchorY(AnchorY anchor)
+{
+	anchorY = anchor;
+}
+
+AnchorX& RectTransform::GetAnchorX()
+{
+	return anchorX;
+}
+
+AnchorY& RectTransform::GetAnchorY()
+{
+	return anchorY;
 }
 
 lm::FVec2 RectTransform::GetPosition()

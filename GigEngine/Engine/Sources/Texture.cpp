@@ -10,49 +10,49 @@
 using namespace GigRenderer;
 
 Texture::Texture(std::string const& pFilePath)
-    :IResource(pFilePath)
+	:IResource(pFilePath)
 {
-    texture = 0;
+	texture = 0;
 }
 
 Texture::~Texture()
 {
-    RENDERER.DeleteTexture(texture);
+	RENDERER.DeleteTexture(texture);
 }
 
 void Texture::Load()
 {
-    // load and generate the texture
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-    if (data)
-    {
-        RENDERER.LoadTexture(texture, width, height, data);
-        valid = true;
-    }
-    else
-    {
-        std::cout << "Failed to load texture : " << filePath << std::endl;
-    }
-    stbi_image_free(data);
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+	if (data)
+	{
+		RENDERER.LoadTexture(texture, width, height, data);
+		valid = true;
+	}
+	else
+	{
+		std::cout << "Failed to load texture : " << filePath << std::endl;
+	}
+	stbi_image_free(data);
 }
 
 void Texture::Bind()
 {
-    RENDERER.BindTexture(RD_TEXTURE_2D, texture);
+	RENDERER.BindTexture(RD_TEXTURE_2D, texture, 0);
 }
 
 void Texture::UnBind()
 {
-    RENDERER.BindTexture(RD_TEXTURE_2D, 0);
+	RENDERER.BindTexture(RD_TEXTURE_2D, 0, 0);
 }
 
 bool Texture::isValid()
 {
-    return valid;
+	return valid;
 }
 
 void Texture::Init()
 {
-    Load();
+	Load();
 }

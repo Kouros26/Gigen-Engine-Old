@@ -99,6 +99,16 @@ int UIManager::GetWorldSize()
 	return worldElements.size();
 }
 
+std::vector<UIElement*>& UIManager::GetUIElements()
+{
+	return elements;
+}
+
+std::vector<UIElement*>& UIManager::GetWorldElements()
+{
+	return worldElements;
+}
+
 UIElement* UIManager::GetUIElement(unsigned int i)
 {
 	if (i < GetUISize())

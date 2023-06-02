@@ -20,30 +20,15 @@ void MenuBarDisplay::Draw()
 
     if (ImGui::BeginMenu("File"))
     {
-        if (ImGui::MenuItem("New Scene", "", false, true))
+        if (ImGui::MenuItem("New Scene"))
         {
-            static char name[64];
-            ImGui::InputText("Scene Name", name, sizeof(name));
-            if (ImGui::Button("Create"))
-            {
-                Scene::GetInstance().SaveScene(std::string(name) + ".chad");
-            }
+            int n = rand() % 1000;
+            Scene::GetInstance().SaveScene("new" + std::to_string(n) + ".chad");
+            Scene::GetInstance().ReloadScene("new" + std::to_string(n) + ".chad");
         }
-        if (ImGui::MenuItem("Save", "", false, true)) {}
-
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Edit"))
-    {
-        if (ImGui::MenuItem("test", "CTRL+Z")) {}
-        if (ImGui::MenuItem("test2", "CTRL+X")) {}
-
-        ImGui::EndMenu();
-    }
-    if (ImGui::Button(ICON_SAVE))
-    {
-        Scene::GetInstance().SaveScene(Scene::GetInstance().GetCurrentSceneName());
-    }
+   
     if (ImGui::BeginMenu("Themes"))
     {
         if (ImGui::MenuItem("Dark", "", false, true))
@@ -92,6 +77,11 @@ void MenuBarDisplay::Draw()
         }
 
         ImGui::EndMenu();
+    }
+
+    if (ImGui::Button(ICON_SAVE))
+    {
+        Scene::GetInstance().SaveScene(Scene::GetInstance().GetCurrentSceneName());
     }
 
     DrawPlayPause();

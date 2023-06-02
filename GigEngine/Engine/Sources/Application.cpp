@@ -12,6 +12,8 @@
 #include "Behaviour.h"
 #include "AudioSource.h"
 #include <iostream>
+
+#include "ShadowMapping.h"
 #include "Animation.h"
 #include "Animator.h"
 #include "RigidBody.h"
@@ -19,317 +21,338 @@
 #include "WorldPhysics.h"
 #include "ScriptInterpreter.h"
 #include "UIImage.h"
-#include "IMGUI/imgui.h"
 
 using namespace GigRenderer;
 
 Application::Application()
 {
-    Init();
+	Init();
 
-    WorldPhysics::GetInstance().InitPhysicWorld();
-    Scene::GetInstance().LoadScene(Scene::GetInstance().GetCurrentSceneName());
-    sk = GameObjectManager::CreateGameObject("sk");
-    sk->SetModel("Engine/Models/Monke.fbx");
-    sk->SetTexture("Engine/Textures/Monkey.png");
-    Animation* anim = new Animation("Engine/Animations/Idle.fbx", sk->GetModel());
-    Animation* animRun = new Animation("Engine/Animations/Run.fbx", sk->GetModel());
-    sk->GetTransform().SetWorldScale(0.005f);
-    sk->AddComponent<Animator>();
-    sk->GetAnimator()->GetAnimationStateRoot().stateAnim = anim;
-    sk->GetAnimator()->AddState( animRun, "Run", "Idle", 0.6f);
-    sk->GetAnimator()->AddState(animRun, "Run2", "Idle", 0.5f);
-    sk->GetAnimator()->AddState(anim, "Idle2", "Run2", 1);
+	WorldPhysics::GetInstance().InitPhysicWorld();
+	Scene::GetInstance().LoadScene(Scene::GetInstance().GetCurrentSceneName());
 }
 
 Application::~Application()
 {
-    Lines::Clear();
-    GameObjectManager::Cleanup();
-    AudioSource::Clear();
-    WorldPhysics::GetInstance().DestroyPhysicWorld();
+	Lines::Clear();
+	ShadowMapping::Clear();
+	GameObjectManager::Cleanup();
+	AudioSource::Clear();
+	WorldPhysics::GetInstance().DestroyPhysicWorld();
 }
 
 Window& Application::GetWindow()
 {
-    return window;
+	return window;
 }
 
 EditorCamera& Application::GetEditorCamera()
 {
-    return editorCamera;
+	return editorCamera;
 }
 
 ShaderProgram& Application::GetMainShader()
 {
-    return mainShader;
+	return mainShader;
 }
 
 lm::FMat4& Application::GetViewProj()
 {
-    return viewProj;
+	return viewProj;
 }
 
 lm::FVec3& Application::GetViewPos()
 {
-    return viewPos;
+	return viewPos;
 }
 
 void Application::Play()
 {
-    if (isEditor)
-    {
-        SCRIPT_INTERPRETER.RefreshBehaviours();
-        StartGame();
-        isEditor = false;
-    }
-    else
-    {
-        Stop();
-    }
+	if (isEditor)
+	{
+		SCRIPT_INTERPRETER.RefreshBehaviours();
+		StartGame();
+		isEditor = false;
+	}
+	else
+	{
+		Stop();
+	}
 }
 
 void Application::Pause()
 {
-    isPause = !isPause;
-    for (int i = 0; i < GameObjectManager::GetSize(); i++)
-    {
-        GameObject* object = GameObjectManager::GetGameObject(i);
-        if (object->IsActive())
-        {
-            if (AudioSource* audio = object->GetComponent<AudioSource>())
-            {
-                if (isPause)
-                    audio->Pause();
-                else
-                    audio->UnPause();
-            }
-        }
-    }
+	isPause = !isPause;
+	for (int i = 0; i < GameObjectManager::GetSize(); i++)
+	{
+		GameObject* object = GameObjectManager::GetGameObject(i);
+		if (object->IsActive())
+		{
+			std::vector<AudioSource*> audio;
+			object->GetComponents<AudioSource>(audio);
+			for (AudioSource* s : audio)
+			{
+				if (isPause)
+					s->Pause();
+				else
+					s->UnPause();
+			}
+		}
+	}
 }
 
 void Application::Stop()
 {
-    isPause = false;
-    GameObjectManager::SetCurrentCamera(nullptr);
-    Scene::GetInstance().ReloadScene(Scene::GetInstance().GetCurrentSceneName());
-    isEditor = true;
+	isPause = false;
+	GameObjectManager::SetCurrentCamera(nullptr);
+	Scene::GetInstance().ReloadScene(Scene::GetInstance().GetCurrentSceneName());
+	isEditor = true;
 }
 
 void Application::ShowUI()
 {
-    showUI = !showUI;
+	showUI = !showUI;
 }
 
 void Application::UseEditorCam()
 {
-    useEditorCam = !useEditorCam;
+	useEditorCam = !useEditorCam;
 }
 
 bool Application::IsInEditor()
 {
-    return isEditor;
+	return isEditor;
 }
+
 bool Application::IsInPause()
 {
-    return isPause;
+	return isPause;
 }
+
 bool Application::IsUsingEditorCam()
 {
-    return useEditorCam;
+	return useEditorCam;
 }
+
 bool Application::IsShowUI()
 {
-    return showUI;
+	return showUI;
 }
+
 void Application::StartGame()
 {
-    for (int i = 0; i < GameObjectManager::GetSize(); i++)
-    {
-        const GameObject* object = GameObjectManager::GetGameObject(i);
+	for (int i = 0; i < GameObjectManager::GetSize(); i++)
+	{
+		const GameObject* object = GameObjectManager::GetGameObject(i);
 
-        if (object->IsActive())
-        {
-            for (int j = 0; j < object->GetComponentCount(); j++)
-                object->GetComponentByID(j)->Start();
-        }
-    }
+		if (object->IsActive())
+		{
+			if (object->GetRigidBody())
+				object->GetRigidBody()->GetRigidBody()->setActivationState(DISABLE_DEACTIVATION);
+
+			for (int j = 0; j < object->GetComponentCount(); j++)
+				object->GetComponentByID(j)->Start();
+		}
+	}
 }
 
 void Application::Run()
 {
-    window.ProcessInput();
-    Time::UpdateDeltaTime();
-    Draw();
+	window.ProcessInput();
+	Time::UpdateDeltaTime();
+	Draw();
 
-    if (!isEditor && !isPause)
-        WorldPhysics::GetInstance().UpdatePhysics(Time::GetDeltaTime());
+	if (!isEditor && !isPause)
+		WorldPhysics::GetInstance().UpdatePhysics(Time::GetDeltaTime());
 
-    WorldPhysics::GetInstance().DrawDebug();
+	else
+	WorldPhysics::GetInstance().DrawDebug();
 }
 
 void Application::SwapFrames()
 {
-    window.swapBuffers();
+	window.swapBuffers();
 }
-
-//ok
 
 void Application::Init()
 {
-    window.Init();
-    editorCamera.SetRatio(window.GetViewPortRatio());
-    RENDERER.Init();
-    Lines::Init();
-    UIManager::Init();
-    InitMainShader();
+	window.Init();
+	editorCamera.SetRatio(window.GetViewPortRatio());
+	RENDERER.Init();
+	Lines::Init();
+	UIManager::Init();
+	InitMainShader();
 
-    //to remove
-    UIManager::AddTextElement();
-    UIManager::AddImageElement();
+	ShadowMapping::Init();
 }
 
 void Application::InitMainShader()
 {
-    auto* mainVertex = ResourceManager::Get<VertexShader>("Engine/Shaders/core_vert.vert");
-    auto* mainFragment = ResourceManager::Get<FragmentShader>("Engine/Shaders/core_frag.frag");
+	auto* mainVertex = ResourceManager::Get<VertexShader>("Engine/Shaders/core_vert.vert");
+	auto* mainFragment = ResourceManager::Get<FragmentShader>("Engine/Shaders/core_frag.frag");
 
-    if (!mainShader.Link(mainVertex, mainFragment))
-        std::cout << "Error linking main shader" << std::endl;
+	if (!mainShader.Link(mainVertex, mainFragment))
+		std::cout << "Error linking main shader" << std::endl;
 
-    ModelLocation = mainShader.GetUniform("model");
-    viewProjLocation = mainShader.GetUniform("viewProj");
-    viewPosLocation = mainShader.GetUniform("viewPos");
+	lightSpaceLocation = mainShader.GetUniform("lightSpaceMatrix");
+	ModelLocation = mainShader.GetUniform("model");
+	viewProjLocation = mainShader.GetUniform("viewProj");
+	viewPosLocation = mainShader.GetUniform("viewPos");
 
-    nbLightLocation = mainShader.GetUniform("nbLights");
+	nbLightLocation = mainShader.GetUniform("nbLights");
+
+	int text0 = 0;
+	mainShader.SetInt(text0, "ourTexture");
+	int text1 = 20; //shadow ma
+	mainShader.SetInt(text1, "shadowMap");
 }
-
+//
 void Application::Draw()
 {
-    //ImGui::ShowDemoWindow();
-    //ImGui::Text(sk->GetAnimator()->GetCurrentState()->stateName.c_str());
-    //if (ImGui::Button("Idle"))
-    //    sk->GetAnimator()->StateChange("Idle");
+	ClearWindow();
+	RENDERER.Disable(RD_DEPTH_TEST);
+	if (GameObjectManager::GetSkyBox())
+		GameObjectManager::GetSkyBox()->Draw();
 
-    //if (ImGui::Button("Run"))
-    //    sk->GetAnimator()->StateChange("Run");
+	if (isEditor || useEditorCam)
+	{
+		editorCamera.Update();
+	}
 
-    //if (ImGui::Button("Run2"))
-    //    sk->GetAnimator()->StateChange("Run2");
+	if (!isEditor && !isPause)
+	{
+		UpdateGameObjectComponent(); //first because components can change the transform, destroy etc
+	}
 
-    //if (ImGui::Button("Idle2"))
-    //    sk->GetAnimator()->StateChange("Idle2");
-    ClearWindow();
+	Camera* currentCamera = useEditorCam || isEditor ? &editorCamera : GameObjectManager::GetCurrentCamera();
+	GameObjectManager::UpdateLightSpaceMatrix(currentCamera);
 
-    RENDERER.Disable(RD_DEPTH_TEST);
-    if (GameObjectManager::GetSkyBox())
-        GameObjectManager::GetSkyBox()->Draw();
+	//shadowMapping
+	RENDERER.Enable(RD_DEPTH_TEST);
+	ShadowMapping::BeginRender();
+	RenderSceneShadows();
+	ShadowMapping::EndRender();
+	RENDERER.BindFrameBuffer(RD_FRAMEBUFFER, 0);
+	RENDERER.Clear(RD_DEPTH_BUFFER_BIT);
 
-    if (isEditor || useEditorCam)
-    {
-        editorCamera.Update();
-    }
-    //
-    mainShader.Use(); //start using the main shader
+	mainShader.Use(); //start using the main shader
+	RENDERER.ViewPort(window.GetVPX(), window.GetVPY(), window.GetVPWidth(), window.GetVPHeight());
+	RenderScene();
+	mainShader.UnUse(); //start using the main shader
 
-    if (!isEditor && !isPause)
-    {
-        UpdateGameObjectComponent(); //first because components can change the transform, destroy etc
-    }
+	//update audio with camera position
+	AudioSource::UpdateAudioEngine(currentCamera);
 
-    UpdateUniforms(); //then send the global uniforms
-    UpdateLights(); //send the lights to the shader (lights are gameobject, so they have been updated)
+	Lines::DrawLines(); //render debug lines or guizmos
 
-    RENDERER.Enable(RD_DEPTH_TEST);
-    RENDERER.DepthFunction(RD_LESS);
-    UpdateGameObjectRender(); //render model if they have one
+	if (showUI)
+		UIManager::DrawUI(); // render UI
+}
 
-    mainShader.UnUse(); //stop using the main shader
+void Application::RenderScene()
+{
+	GigRenderer::RENDERER.BindTexture(RD_TEXTURE_2D, ShadowMapping::GetdepthMap(), 1);
+	UpdateUniforms(); //then send the global uniforms
+	UpdateLights(); //send the lights to the shader (lights are gameobject, so they have been updated)
 
-    //update audio with camera position
-    Camera* currentCamera = useEditorCam ? &editorCamera : GameObjectManager::GetCurrentCamera();
-    AudioSource::UpdateAudioEngine(currentCamera);
+	RENDERER.Enable(RD_DEPTH_TEST);
+	RENDERER.DepthFunction(RD_LESS);
+	UpdateGameObjectRender(); //render model if they have one
+}
 
-    Lines::DrawLines(); //render debug lines or guizmos
+void Application::RenderSceneShadows()
+{
+	lm::FMat4 mat = GameObjectManager::GetDirLightSpaceMatrix();
+	ShadowMapping::SendLight(mat);
 
-    if (showUI)
-        UIManager::DrawUI(); // render UI
+	for (int i = 0; i < GameObjectManager::GetSize(); i++)
+	{
+		GameObject* object = GameObjectManager::GetGameObject(i);
+
+		object->UpdateHierarchy();
+
+		ShadowMapping::SendModel(object->GetTransform().MatrixGetter());
+		object->UpdateRender();
+	}
 }
 
 void Application::ClearWindow()
 {
-    RENDERER.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-    RENDERER.Clear(RD_COLOR_BUFFER_BIT | RD_DEPTH_BUFFER_BIT);
+	RENDERER.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	RENDERER.Clear(RD_COLOR_BUFFER_BIT | RD_DEPTH_BUFFER_BIT);
 }
 
 void Application::UpdateGameObjectComponent()
 {
-    for (int i = 0; i < GameObjectManager::GetSize(); i++)
-    {
-        const GameObject* object = GameObjectManager::GetGameObject(i);
-        object->UpdateComponents();
-    }
+	for (int i = 0; i < GameObjectManager::GetSize(); i++)
+	{
+		const GameObject* object = GameObjectManager::GetGameObject(i);
 
-    for (int i = 0; i < GameObjectManager::GetSize(); i++)
-    {
-        const GameObject* object = GameObjectManager::GetGameObject(i);
-        object->LateUpdate();
-    }
+		if (object->GetName() == "Monkey")
+			std::cout << "Test";
+		object->UpdateComponents();
+	}
+
+	for (int i = 0; i < GameObjectManager::GetSize(); i++)
+	{
+		const GameObject* object = GameObjectManager::GetGameObject(i);
+		object->LateUpdate();
+	}
 }
 
 void Application::UpdateGameObjectRender() const
 {
-    for (int i = 0; i < GameObjectManager::GetSize(); i++)
-    {
-        GameObject* object = GameObjectManager::GetGameObject(i);
-
-        object->UpdateHierarchy();
-
-        RENDERER.SetUniformValue(ModelLocation, UniformType::MAT4, &object->GetTransform().MatrixGetter());
-        object->UpdateRender();
-    }
+	for (int i = 0; i < GameObjectManager::GetSize(); i++)
+	{
+		GameObject* object = GameObjectManager::GetGameObject(i);
+		RENDERER.SetUniformValue(ModelLocation, UniformType::MAT4, &object->GetTransform().MatrixGetter());
+		object->UpdateRender();
+	}
 }
 
 void Application::UpdateLights() const
 {
-    int nbLight = GameObjectManager::GetDirLightSize();
-    nbLight += GameObjectManager::GetPointLightSize();
-    nbLight += GameObjectManager::GetSpotLightSize();
+	int nbLight = GameObjectManager::GetDirLightSize();
+	nbLight += GameObjectManager::GetPointLightSize();
+	nbLight += GameObjectManager::GetSpotLightSize();
 
-    RENDERER.SetUniformValue(nbLightLocation, UniformType::INT, &nbLight);
+	RENDERER.SetUniformValue(nbLightLocation, UniformType::INT, &nbLight);
 
-    GameObjectManager::SendLightsToShader();
+	GameObjectManager::SendLightsToShader();
 }
 
 void Application::UpdateUniforms() const
 {
-    Camera* cam = nullptr;
-    if (isEditor || useEditorCam)
-    {
-        cam = &editorCamera;
-    }
-    else
-    {
-        if (GameObjectManager::GetCurrentCamera())
-        {
-            if (GameObjectManager::GetCurrentCamera()->IsActive())
-            {
-                cam = GameObjectManager::GetCurrentCamera();
-            }
-        }
-    }
+	Camera* cam = nullptr;
+	if (isEditor || useEditorCam)
+	{
+		cam = &editorCamera;
+	}
+	else
+	{
+		if (GameObjectManager::GetCurrentCamera())
+		{
+			if (GameObjectManager::GetCurrentCamera()->IsActive())
+			{
+				cam = GameObjectManager::GetCurrentCamera();
+			}
+		}
+	}
 
-    if (cam)
-    {
-        viewProj = cam->GetProjectionMatrix() * cam->CreateViewMatrix();
-        viewPos = cam->GetTransform().GetWorldPosition();
-    }
-    else
-    {
-        viewProj = lm::FMat4(0);
-        viewPos = lm::FVec3(0);
-    }
+	if (cam)
+	{
+		viewProj = cam->GetProjectionMatrix() * cam->CreateViewMatrix();
+		viewPos = cam->GetTransform().GetWorldPosition();
+	}
+	else
+	{
+		viewProj = lm::FMat4(0);
+		viewPos = lm::FVec3(0);
+	}
 
-    RENDERER.SetUniformValue(viewProjLocation, UniformType::MAT4, &viewProj);
-    RENDERER.SetUniformValue(viewPosLocation, UniformType::VEC3, &viewPos);
+	lm::FMat4 mat = GameObjectManager::GetDirLightSpaceMatrix();
+
+	RENDERER.SetUniformValue(lightSpaceLocation, UniformType::MAT4, &mat);
+	RENDERER.SetUniformValue(viewProjLocation, UniformType::MAT4, &viewProj);
+	RENDERER.SetUniformValue(viewPosLocation, UniformType::VEC3, &viewPos);
 }

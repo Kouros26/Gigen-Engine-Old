@@ -37,7 +37,8 @@ void GigScripting::LuaBindComponent::BindComponent(sol::state& pLuaState)
         "SetWorldPosition", &Transform::SetWorldPosition,
         "SetWorldRotation", &Transform::SetWorldRotation,
         "SetWorldScale", &Transform::SetWorldScale,
-        "LookAt", &Transform::LookAt
+        "LookAt", &Transform::LookAt,
+        "GetMatrix", &Transform::MatrixGetter
 
     );
 
@@ -79,7 +80,11 @@ void GigScripting::LuaBindComponent::BindComponent(sol::state& pLuaState)
             sol::resolve<void(const lm::FVec3&)const>(&RigidBody::SetLinearFactor),
             sol::resolve<void(const float)const>(&RigidBody::SetLinearFactor)
         ),
-        "SetAngularFactor", &RigidBody::SetAngularFactor,
+        "SetAngularFactor", sol::overload
+        (
+            sol::resolve<void(const lm::FVec3&)const>(&RigidBody::SetAngularFactor),
+            sol::resolve<void(const float)const>(&RigidBody::SetAngularFactor)
+        ),
         "GetLinearFactor", &RigidBody::GetLinearFactor,
         "GetAngularFactor", &RigidBody::GetAngularFactor,
         "IsTrigger", &RigidBody::IsTrigger,
@@ -106,7 +111,8 @@ void GigScripting::LuaBindComponent::BindComponent(sol::state& pLuaState)
         "SetAudio", &AudioSource::SetAudioWithLuaPath,
         "SetLoop", &AudioSource::SetIsLooping,
         "Set3D", &AudioSource::SetIs2D,
-        "IsPlaying", &AudioSource::GetIsPlaying
+        "IsPlaying", &AudioSource::GetIsPlaying,
+        "PlayOnStart", &AudioSource::SetPlayOnStart
     );
 }
 
@@ -139,6 +145,12 @@ std::function<void(GameObject*)>& GigScripting::LuaBindComponent::getFunctionFro
 
     if (pInput.compare("OnCollisionExit") == 0)
         return delegateFunctions.OnCollisionExit;
+
+    if (pInput.compare("OnTriggerEnter") == 0)
+        return delegateFunctions.OnTriggerEnter;
+
+    if (pInput.compare("OnTriggerExit") == 0)
+        return delegateFunctions.OnTriggerExit;
 
     return delegateFunctions.defaultReturn;
 }

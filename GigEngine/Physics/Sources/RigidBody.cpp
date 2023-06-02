@@ -4,7 +4,8 @@
 #include "Mat3/FMat3.hpp"
 
 RigidBody::RigidBody(GameObject* pOwner)
-	: owner(pOwner) {}
+	: owner(pOwner)
+{}
 
 RigidBody::~RigidBody()
 {
@@ -16,7 +17,7 @@ RigidBody::~RigidBody()
 	delete rbShape;
 }
 
-void RigidBody::SetRBState(const RBState& pState) const
+void RigidBody::SetRBState(const RBState& pState)
 {
 	if (pState == state)
 		return;
@@ -32,18 +33,28 @@ void RigidBody::SetRBState(const RBState& pState) const
 	case RBState::STATIC:
 		body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_STATIC_OBJECT);
 		break;
+	case RBState::TRIGGER:
+		body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
+		break;
 	}
 
 	switch (pState)
 	{
 	case RBState::DYNAMIC:
 		body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DYNAMIC_OBJECT);
+		state = RBState::DYNAMIC;
 		break;
 	case RBState::KINETIC:
 		body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		state = RBState::KINETIC;
 		break;
 	case RBState::STATIC:
 		body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
+		state = RBState::STATIC;
+		break;
+	case RBState::TRIGGER:
+		body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+		state = RBState::TRIGGER;
 		break;
 	}
 }
@@ -194,6 +205,11 @@ void RigidBody::SetAngularFactor(const float pValue) const
 	body->setAngularFactor(pValue);
 }
 
+void RigidBody::SetAngularFactor(const lm::FVec3& pValue) const
+{
+    body->setAngularFactor(btVector3(pValue.x, pValue.y, pValue.z));
+}
+
 lm::FVec3 RigidBody::GetLinearFactor() const
 {
 	return { body->getAngularFactor().x(), body->getAngularFactor().y(), body->getAngularFactor().z() };
@@ -267,6 +283,23 @@ int RigidBody::GetCollisionFlag() const
 		return static_cast<int>(RBState::KINETIC);
 	case btCollisionObject::CF_STATIC_OBJECT:
 		return static_cast<int>(RBState::STATIC);
+	case btCollisionObject::CF_NO_CONTACT_RESPONSE:
+		return static_cast<int>(RBState::TRIGGER);
+	default:
+		return static_cast<int>(RBState::DYNAMIC);
+	}
+}
+
+int RigidBody::GetRBState() const
+{
+	switch (body->getCollisionFlags())
+	{
+	case btCollisionObject::CF_KINEMATIC_OBJECT:
+		return static_cast<int>(RBState::KINETIC);
+	case btCollisionObject::CF_STATIC_OBJECT:
+		return static_cast<int>(RBState::STATIC);
+	case btCollisionObject::CF_NO_CONTACT_RESPONSE:
+		return 4;
 	default:
 		return static_cast<int>(RBState::DYNAMIC);
 	}
@@ -277,14 +310,14 @@ const lm::FVec3& RigidBody::GetScale()
 	return scale;
 }
 
-btTransform RigidBody::GetTransfrom() const
+btTransform& RigidBody::GetTransfrom()
 {
 	return transform;
 }
 
-void RigidBody::SetMass(btScalar pMass)
+void RigidBody::SetMass(const float pValue)
 {
-	mass = pMass;
+	mass = pValue;
 }
 
 void RigidBody::SetScale(const lm::FVec3& pNewScale)
@@ -302,6 +335,8 @@ void RigidBody::SetGravityEnabled(const bool pState) const
 		body->setGravity({ 0,-9.81f,0, });
 }
 
+
+
 void RigidBody::ClearForces() const
 {
 	SetVelocity(0);
@@ -312,6 +347,11 @@ void RigidBody::ClearForces() const
 void RigidBody::SetGravity(const lm::FVec3& pValue) const
 {
 	body->setGravity({ pValue.x, pValue.y, pValue.z });
+}
+
+void RigidBody::LockAxisOfRotation(const lm::FVec3& pAxis) const
+{
+	body->setAngularFactor({ pAxis.x, pAxis.y, pAxis.z });
 }
 
 lm::FVec3 RigidBody::GetGravity() const

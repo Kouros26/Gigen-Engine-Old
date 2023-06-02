@@ -5,7 +5,14 @@ UIElement::UIElement() : Object()
 {
 }
 
-UIElement::UIElement(const std::string& name) : Object(name)
+UIElement::UIElement(const std::string& pName) : Object(pName)
+{
+}
+
+UIElement::UIElement(const std::string& pName, bool pIsWorld, int pIsImage, const lm::FVec3& pColor,
+	const RectTransform& pRectTransform, const Transform& pTransform)
+	: Object(pName),  isWorld(pIsWorld), isImage(pIsImage), color(pColor),
+	  rectTransform(pRectTransform), transform(pTransform)
 {
 }
 

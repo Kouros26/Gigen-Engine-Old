@@ -21,6 +21,9 @@
 #define RD_DEPTH_BUFFER_BIT 0x00000100
 #define RD_TEXTURE_2D 0x0DE1
 #define RD_LESS 0x0201
+#define RD_FRAMEBUFFER 0x8D40
+#define RD_TEXTURE0 0x84C0
+#define RD_TEXTURE1 0x84C1
 
 class Font;
 class UIImage;
@@ -115,7 +118,7 @@ namespace GigRenderer
         void Clear(unsigned int pMask);
         void LoadTexture(unsigned int& pTexture, int pWidth, int pHeight, const void* pData);
         void LoadImguiTexture(unsigned int& pTexture, int pWidth, int pHeight, const void* pData);
-        void BindTexture(unsigned int pTarget, unsigned int pTexture);
+        void BindTexture(unsigned int pTarget, unsigned int pTexture, unsigned int actifText);
         void DeleteTexture(unsigned int pTexture);
         void DepthFunction(unsigned int pFunc);
         void SetupBuffer(const Buffer& pVBO, const Buffer& pEBO, const BufferVAO& pVAO);
@@ -123,5 +126,10 @@ namespace GigRenderer
         [[nodiscard]] bool LinkShader(unsigned int& pProgram, unsigned int& pVertexShader, unsigned int& pFragmentShader);
 		void LoadUIImage(UIImage* img);
 		void LoadFont(Font* f) const;
+        void BindFrameBuffer(unsigned int type, unsigned int buff);
+        void DeleteFrameBuffer(unsigned int buff);
+
+        void InitShadowMapping() const;
+        void RenderShadowMapping() const;
 	};
 };

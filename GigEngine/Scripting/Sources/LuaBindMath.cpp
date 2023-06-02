@@ -182,6 +182,12 @@ void GigScripting::LuaBindMath::BindMath(sol::state& pLua)
         FMat4(const FVec4&, const FVec4&, const FVec4&, const FVec4&)
         >(),
 
+        /* Accessor  */
+        sol::meta_function::index, [](const FMat4& target, int index)
+        {
+            return target[index];
+        },
+
         /* Operators */
         sol::meta_function::addition, &FMat4::operator+,
         sol::meta_function::subtraction, sol::resolve<FMat4(const FMat4&) const >(&FMat4::operator-),

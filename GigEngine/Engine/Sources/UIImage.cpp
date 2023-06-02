@@ -1,6 +1,7 @@
 #include "UIImage.h"
 #include "Renderer.h"
 #include "Application.h"
+#include "ShadowMapping.h"
 #include "ResourceManager.h"
 
 using namespace GigRenderer;
@@ -36,12 +37,32 @@ void UIImage::Draw()
 {
 	GigRenderer::RENDERER.BindVertexArray(VAO);
 
-	lm::FVec2 size = GetRectTransform().GetSize();
+	const lm::FVec2 size = GetRectTransform().GetSize();
 	// iterate through all characters
 	std::string::const_iterator c;
 
-	const float xpos = GetRectTransform().GetPosition().x;
-	const float ypos = GetRectTransform().GetPosition().y;
+	float xpos = GetRectTransform().GetPosition().x;
+	float ypos = GetRectTransform().GetPosition().y;
+
+	switch (GetRectTransform().GetAnchorX())
+	{
+	case AnchorX::CENTER:
+		xpos += (Application::GetWindow().GetVPWidth() / 2) - (size.x / 2);
+		break;
+	case AnchorX::RIGHT:
+		xpos += Application::GetWindow().GetVPWidth() - size.x;
+		break;
+	}
+
+	switch (GetRectTransform().GetAnchorY())
+	{
+	case AnchorY::CENTER:
+		ypos += (Application::GetWindow().GetVPHeight() / 2) - (size.y / 2);
+		break;
+	case AnchorY::UP:
+		ypos += Application::GetWindow().GetVPHeight() - size.y;
+		break;
+	}
 
 	const float w = size.x;
 	const float h = size.y;
@@ -56,6 +77,7 @@ void UIImage::Draw()
 		{ xpos + w, ypos + h,   1.0f, 0.0f }
 	};
 	// render glyph texture over quad
+
 	texture->Bind();
 	// update content of VBO memory
 	RENDERER.BindBuffer(GigRenderer::BufferType::VERTEX, VBO);
@@ -65,5 +87,5 @@ void UIImage::Draw()
 	RENDERER.DrawArray(GL_TRIANGLES, 0, 6);
 
 	RENDERER.BindVertexArray(0);
-	RENDERER.BindTexture(GL_TEXTURE_2D, 0);
+	RENDERER.BindTexture(GL_TEXTURE_2D, 0, RD_TEXTURE0);
 }
